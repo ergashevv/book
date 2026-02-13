@@ -107,9 +107,8 @@ export default function Books({ initData }) {
                 <h3 className="book-card__title">{book.title}</h3>
                 {book.author && <p className="book-card__author">{book.author}</p>}
                 <p className="book-card__meta">
-                  {book.page_count ? `${book.page_count} ${t('books.pages')}` : ''}
-                  {book.page_count && book.category_name ? ' • ' : ''}
-                  {book.category_name}
+                  {book.page_count ? <span>{book.page_count} {t('books.pages')}</span> : null}
+                  {book.category_name && <span className="book-card__category">{book.category_name}</span>}
                 </p>
               </div>
               <span className="book-card__chevron" aria-hidden>
