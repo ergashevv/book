@@ -2,7 +2,8 @@ import { Bot, webhookCallback } from 'grammy';
 
 const token = process.env.BOT_TOKEN;
 const webAppUrl = process.env.WEBAPP_URL || 'http://localhost:3000';
-const useWebhook = process.env.WEBHOOK_URL && !process.env.WEBHOOK_URL.includes('localhost');
+const webhookUrl = process.env.WEBHOOK_URL || '';
+const useWebhook = webhookUrl && !webhookUrl.includes('localhost');
 
 let bot = null;
 let botWebhookHandler = (req, res) => res.status(501).send('Bot not configured');
@@ -41,4 +42,22 @@ if (token) {
   console.warn('BOT_TOKEN not set – Telegram bot disabled');
 }
 
-export { bot, botWebhookHandler, startPolling };
+/** Production: webhook o‘rnatish. Local: webhook o‘chirib polling. */
+async function setupBot() {
+  if (!bot) return;
+  try {
+    if (useWebhook) {
+      const url = (webhookUrl.replace(/\/$/, '') + '/telegram-webhook').trim();
+      await bot.api.setWebhook(url);
+      console.log('Bot: webhook o‘rnatildi –', url);
+    } else {
+      await bot.api.deleteWebhook({ drop_pending_updates: true });
+      startPolling();
+      console.log('Bot: long polling yoqildi – /start ni yuboring');
+    }
+  } catch (e) {
+    console.error('Bot setup xatosi:', e.message);
+  }
+}
+
+export { bot, botWebhookHandler, startPolling, setupBot };

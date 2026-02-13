@@ -6,7 +6,7 @@ import cors from 'cors';
 import db from './db.js';
 import apiRoutes from './routes/api.js';
 import adminRoutes from './routes/admin.js';
-import { bot, botWebhookHandler, startPolling } from './bot.js';
+import { bot, botWebhookHandler, setupBot } from './bot.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -46,9 +46,7 @@ app.listen(PORT, () => {
   console.log(`Server http://localhost:${PORT}`);
   console.log(`Web App: http://localhost:${PORT}/`);
   console.log(`Admin:   http://localhost:${PORT}/admin/`);
-  // Localhost da bot long polling orqali ishlaydi (webhook kerak emas)
-  if (process.env.BOT_TOKEN && !useWebhook) {
-    startPolling();
-    console.log('Bot: long polling yoqildi – /start ni yuboring');
+  if (process.env.BOT_TOKEN) {
+    setupBot();
   }
 });
