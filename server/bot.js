@@ -1,9 +1,13 @@
 import { Bot, webhookCallback } from 'grammy';
 
 const token = process.env.BOT_TOKEN;
-const webAppUrl = process.env.WEBAPP_URL || 'http://localhost:3000';
-// Production: WEBHOOK_URL yoki WEBAPP_URL (HTTPS) bo‘lsa webhook ishlatamiz – 409 conflict bo‘lmasin
-const webhookUrl = (process.env.WEBHOOK_URL || (process.env.WEBAPP_URL && process.env.WEBAPP_URL.startsWith('https') ? process.env.WEBAPP_URL : '')).trim().replace(/\/$/, '');
+const webAppUrl = process.env.WEBAPP_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
+// Webhook: WEBHOOK_URL, yoki Render da RENDER_EXTERNAL_URL, yoki WEBAPP_URL (HTTPS). Bot shu manzilga javob beradi.
+const webhookUrl = (
+  process.env.WEBHOOK_URL ||
+  (process.env.RENDER_EXTERNAL_URL && process.env.RENDER_EXTERNAL_URL.startsWith('http') ? process.env.RENDER_EXTERNAL_URL : '') ||
+  (process.env.WEBAPP_URL && process.env.WEBAPP_URL.startsWith('https') ? process.env.WEBAPP_URL : '')
+).trim().replace(/\/$/, '');
 const useWebhook = !!webhookUrl && !webhookUrl.includes('localhost');
 
 let bot = null;
