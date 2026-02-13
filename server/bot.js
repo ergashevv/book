@@ -2,8 +2,9 @@ import { Bot, webhookCallback } from 'grammy';
 
 const token = process.env.BOT_TOKEN;
 const webAppUrl = process.env.WEBAPP_URL || 'http://localhost:3000';
-const webhookUrl = process.env.WEBHOOK_URL || '';
-const useWebhook = webhookUrl && !webhookUrl.includes('localhost');
+// Production: WEBHOOK_URL yoki WEBAPP_URL (HTTPS) bo‘lsa webhook ishlatamiz – 409 conflict bo‘lmasin
+const webhookUrl = (process.env.WEBHOOK_URL || (process.env.WEBAPP_URL && process.env.WEBAPP_URL.startsWith('https') ? process.env.WEBAPP_URL : '')).trim().replace(/\/$/, '');
+const useWebhook = !!webhookUrl && !webhookUrl.includes('localhost');
 
 let bot = null;
 let botWebhookHandler = (req, res) => res.status(501).send('Bot not configured');
