@@ -14,6 +14,7 @@ export default function News() {
         {BANNERS.map((b) => (
           <Banner
             key={b.id}
+            imageUrl={b.imageUrl}
             gradient={b.gradient}
             titleKey={b.titleKey}
             subKey={b.subKey}

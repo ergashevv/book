@@ -1,4 +1,6 @@
-/** Banner va yangiliklar – keyinchalik API dan keladi */
+/** Banner va yangiliklar – real rasmlar (Unsplash), keyinchalik API dan keladi */
+const UNSPLASH = (id, w = 800) => `https://images.unsplash.com/photo-${id}?w=${w}&q=80&fit=crop`;
+
 export const BANNERS = [
   {
     id: 1,
@@ -6,7 +8,7 @@ export const BANNERS = [
     titleKey: 'banner.heroTitle',
     subKey: 'banner.heroSub',
     ctaKey: 'banner.ctaBooks',
-    gradient: 'linear-gradient(135deg, #ea580c 0%, #f59e0b 50%, #fbbf24 100%)',
+    imageUrl: UNSPLASH('1497633762265-9d179a990aa6', 800), // kitoblar
     link: '/books',
   },
   {
@@ -15,7 +17,7 @@ export const BANNERS = [
     titleKey: 'banner.promoTitle',
     subKey: 'banner.promoSub',
     ctaKey: 'banner.ctaRead',
-    gradient: 'linear-gradient(135deg, #c2410c 0%, #ea580c 100%)',
+    imageUrl: UNSPLASH('1507003211169-0a1dd7228f2d', 800), // o'qish
     link: '/books',
   },
   {
@@ -24,7 +26,7 @@ export const BANNERS = [
     titleKey: 'banner.newsTitle',
     subKey: 'banner.newsSub',
     ctaKey: 'banner.ctaMore',
-    gradient: 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)',
+    imageUrl: UNSPLASH('1512820790803-83ca734da794', 800), // kutubxona
     link: '/news',
   },
 ];

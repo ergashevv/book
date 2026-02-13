@@ -1,9 +1,9 @@
-* { box-sizing: border-box; }
-body { margin: 0; font-family: system-ui, sans-serif; background: #1a1a2e; color: #eee; }
-#root { min-height: 100vh; padding: 20px; }
-input, select, button { font: inherit; padding: 8px 12px; border-radius: 6px; border: 1px solid #444; background: #16213e; color: #eee; }
-button { cursor: pointer; background: #e94560; color: #fff; border: none; }
-button.secondary { background: #16213e; color: #eee; border: 1px solid #666; }
-.card { background: #16213e; border-radius: 12px; padding: 20px; margin-bottom: 16px; max-width: 600px; }
-h1, h2 { margin-top: 0; }
-a { color: #e94560; }
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body { @apply bg-slate-900 text-slate-100 antialiased; }
+  input, select, textarea { @apply rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 placeholder-slate-500 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500; }
+  button { @apply rounded-lg font-medium transition-colors; }
+}

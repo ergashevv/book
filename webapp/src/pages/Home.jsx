@@ -46,6 +46,7 @@ export default function Home({ initData }) {
   return (
     <div className="content">
       <Banner
+        imageUrl={heroBanner.imageUrl}
         gradient={heroBanner.gradient}
         titleKey={heroBanner.titleKey}
         subKey={heroBanner.subKey}
