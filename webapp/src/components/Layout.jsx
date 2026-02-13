@@ -36,7 +36,7 @@ export default function Layout() {
   return (
     <div className="layout">
       {!showSimpleHeader && (
-        <header className="layout__header layout__header--kindle">
+        <header className="layout__header layout__header--yandex">
           <Link to="/search" className="layout__icon" aria-label={t('home.search')}><IconSearch style={{ width: 22, height: 22 }} /></Link>
           <h1 className="layout__title">{t(TITLES[path] || 'layout.appName')}</h1>
           <Link to="/notifications" className="layout__icon" aria-label={t('nav.notifications')}><IconBell style={{ width: 22, height: 22 }} /></Link>
