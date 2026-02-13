@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IconArrowLeft } from '../components/Icons';
-import { MOCK_BOOKS } from '../mock';
+import { useTelegram } from '../useTelegram';
+import { fetchBooks } from '../api/content';
 
 const RECENT_KEY = 'search_recent';
 
@@ -23,9 +24,21 @@ function addRecent(query) {
 
 export default function Search() {
   const navigate = useNavigate();
+  const { initData } = useTelegram();
   const [q, setQ] = useState('');
   const [recent, setRecent] = useState(getRecent());
-  const results = q.trim() ? MOCK_BOOKS.filter((b) => b.title.toLowerCase().includes(q.toLowerCase()) || (b.author && b.author.toLowerCase().includes(q.toLowerCase()))) : [];
+  const [allBooks, setAllBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchBooks(initData).then((list) => { if (!cancelled) setAllBooks(list); }).finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [initData]);
+
+  const results = q.trim()
+    ? allBooks.filter((b) => b.title.toLowerCase().includes(q.toLowerCase()) || (b.author && b.author.toLowerCase().includes(q.toLowerCase())))
+    : [];
 
   useEffect(() => {
     setRecent(getRecent());
@@ -67,7 +80,9 @@ export default function Search() {
       )}
       {q.trim() && (
         <div className="search-results">
-          {results.length === 0 ? (
+          {loading ? (
+            <div className="skeleton-card" style={{ minHeight: 100 }} />
+          ) : results.length === 0 ? (
             <p className="muted">No results for &quot;{q}&quot;</p>
           ) : (
             results.map((book) => (

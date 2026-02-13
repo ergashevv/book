@@ -236,7 +236,7 @@ a .icons-svg, button .icons-svg { color: inherit; }
 .bottom-nav__item:hover, .bottom-nav__item:focus { color: var(--text); background: var(--surface-hover); }
 .bottom-nav__item--active { color: var(--accent); font-weight: 600; background: var(--accent-soft); }
 .bottom-nav__icon { display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.bottom-nav__icon svg { display: block; }
+.bottom-nav__icon svg { display: block; width: 22px; height: 22px; color: inherit; fill: none; stroke: currentColor; }
 .bottom-nav__label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
 /* Home hero – BOOKLY style */

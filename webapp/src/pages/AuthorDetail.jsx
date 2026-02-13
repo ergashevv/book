@@ -1,12 +1,50 @@
+import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { IconSearch, IconArrowLeft } from '../components/Icons';
-import { MOCK_AUTHORS, MOCK_BOOKS } from '../mock';
+import { useTelegram } from '../useTelegram';
+import { fetchAuthorById, fetchBooks } from '../api/content';
 import BookCover from '../components/BookCover';
 
 export default function AuthorDetail() {
   const { authorId } = useParams();
-  const author = MOCK_AUTHORS.find((a) => a.id === authorId);
-  const books = author?.bookIds?.map((id) => MOCK_BOOKS.find((b) => b.id === id)).filter(Boolean) || MOCK_BOOKS.slice(0, 4);
+  const { initData } = useTelegram();
+  const [author, setAuthor] = useState(null);
+  const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!authorId) return;
+    let cancelled = false;
+    setLoading(true);
+    Promise.all([fetchAuthorById(authorId, initData), fetchBooks(initData)])
+      .then(([a, allBooks]) => {
+        if (cancelled) return;
+        setAuthor(a ?? null);
+        if (a?.bookIds?.length) {
+          const byId = allBooks.filter((b) => a.bookIds.includes(b.id));
+          setBooks(byId.length ? byId : allBooks.slice(0, 4));
+        } else {
+          setBooks(allBooks.slice(0, 4));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setAuthor(null);
+      })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [authorId, initData]);
+
+  if (loading && !author) {
+    return (
+      <div className="content">
+        <header className="page-header">
+          <Link to="/authors" className="page-header__back"><IconArrowLeft style={{ width: 24, height: 24 }} /></Link>
+          <h1 className="page-header__title">Authors</h1>
+        </header>
+        <div className="skeleton-card" style={{ minHeight: 200 }} />
+      </div>
+    );
+  }
 
   if (!author) {
     return (
