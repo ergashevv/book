@@ -2,14 +2,21 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useEffect, useState, useMemo } from 'react';
 import { apiGet, getBookCoverUrl } from '../api';
 import { useLang } from '../contexts/LangContext';
+import { useReading } from '../contexts/ReadingContext';
 import BookCover from '../components/BookCover';
-import { IconSearch } from '../components/Icons';
+import { IconSearch, IconChevronRight } from '../components/Icons';
 import { SkeletonBookList } from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
-import { IconChevronRight } from '../components/Icons';
+
+const SORT_OPTIONS = [
+  { id: 'recent', labelKey: 'library.sortRecent' },
+  { id: 'az', labelKey: 'library.sortAZ' },
+  { id: 'progress', labelKey: 'library.sortProgress' },
+];
 
 export default function Books({ initData }) {
   const { t } = useLang();
+  const { getProgress } = useReading();
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryId = searchParams.get('category_id');
   const [books, setBooks] = useState([]);
@@ -18,33 +25,60 @@ export default function Books({ initData }) {
   const [catLoading, setCatLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('libraryView') || 'list' : 'list'));
+  const [sortBy, setSortBy] = useState('recent');
 
   useEffect(() => {
-    apiGet('/categories', initData).then(setCategories).catch(() => {}).finally(() => setCatLoading(false));
+    apiGet('/categories', initData)
+      .then((res) => {
+        const list = Array.isArray(res) ? res : res?.categories ?? res?.data ?? [];
+        setCategories(Array.isArray(list) ? list : []);
+      })
+      .catch(() => {})
+      .finally(() => setCatLoading(false));
   }, [initData]);
 
   useEffect(() => {
     const path = categoryId ? `/books?category_id=${categoryId}` : '/books';
     setLoading(true);
     apiGet(path, initData)
-      .then(setBooks)
+      .then((res) => {
+        const list = Array.isArray(res) ? res : res?.books ?? res?.data ?? [];
+        setBooks(Array.isArray(list) ? list : []);
+      })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   }, [initData, categoryId]);
 
   const filteredBooks = useMemo(() => {
-    if (!searchQuery.trim()) return books;
-    const q = searchQuery.trim().toLowerCase();
-    return books.filter(
-      (b) =>
-        (b.title && b.title.toLowerCase().includes(q)) ||
-        (b.author && b.author.toLowerCase().includes(q))
-    );
-  }, [books, searchQuery]);
+    let list = books;
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      list = books.filter(
+        (b) =>
+          (b.title && b.title.toLowerCase().includes(q)) ||
+          (b.author && b.author.toLowerCase().includes(q))
+      );
+    }
+    const withProgress = list.map((b) => ({ ...b, reading: getProgress(b.id) }));
+    if (sortBy === 'az') return [...withProgress].sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+    if (sortBy === 'progress') return [...withProgress].sort((a, b) => {
+      const pa = a.reading?.totalPages > 0 ? (a.reading.page / a.reading.totalPages) * 100 : 0;
+      const pb = b.reading?.totalPages > 0 ? (b.reading.page / b.reading.totalPages) * 100 : 0;
+      return pb - pa;
+    });
+    return [...withProgress].sort((a, b) => (b.reading?.lastOpened ?? 0) - (a.reading?.lastOpened ?? 0));
+  }, [books, searchQuery, sortBy, getProgress]);
 
   const setCategory = (id) => {
     if (id) setSearchParams({ category_id: id });
     else setSearchParams({});
+  };
+
+  const toggleView = () => {
+    const next = viewMode === 'list' ? 'grid' : 'list';
+    setViewMode(next);
+    if (typeof localStorage !== 'undefined') localStorage.setItem('libraryView', next);
   };
 
   return (
@@ -63,6 +97,31 @@ export default function Books({ initData }) {
         />
       </div>
 
+      <div className="library-toolbar">
+        <div className="library-sort">
+          {SORT_OPTIONS.map((opt) => (
+            <button
+              key={opt.id}
+              type="button"
+              className={`books-filter-btn ${sortBy === opt.id ? 'books-filter-btn--active' : ''}`}
+              onClick={() => setSortBy(opt.id)}
+            >
+              {t(opt.labelKey)}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          className={`library-view-toggle ${viewMode}`}
+          onClick={toggleView}
+          aria-label={viewMode === 'list' ? t('library.gridView') : t('library.listView')}
+          title={viewMode === 'list' ? t('library.gridView') : t('library.listView')}
+        >
+          <span className="library-view-icon library-view-icon--grid" aria-hidden>⊞</span>
+          <span className="library-view-icon library-view-icon--list" aria-hidden>≡</span>
+        </button>
+      </div>
+
       {!catLoading && categories.length > 0 && (
         <div className="books-filters">
           <button
@@ -74,12 +133,12 @@ export default function Books({ initData }) {
           </button>
           {categories.map((cat) => (
             <button
-              key={cat.id}
+              key={typeof cat === 'object' ? cat.id : cat}
               type="button"
-              className={`books-filter-btn ${categoryId === String(cat.id) ? 'books-filter-btn--active' : ''}`}
-              onClick={() => setCategory(cat.id)}
+              className={`books-filter-btn ${categoryId === String(typeof cat === 'object' ? cat.id : cat) ? 'books-filter-btn--active' : ''}`}
+              onClick={() => setCategory(typeof cat === 'object' ? cat.id : cat)}
             >
-              {cat.name_uz}
+              {typeof cat === 'string' ? cat : (cat.name_uz ?? cat.name ?? cat.id ?? '')}
             </button>
           ))}
         </div>
@@ -99,23 +158,37 @@ export default function Books({ initData }) {
         </EmptyState>
       )}
       {!loading && !error && filteredBooks.length > 0 && (
-        <div className="book-list">
-          {filteredBooks.map((book) => (
-            <Link key={book.id} to={`/books/${book.id}/detail`} className="book-card">
-              <BookCover coverUrl={getBookCoverUrl(book, initData)} size="sm" alt={book.title} />
-              <div className="book-card__body">
-                <h3 className="book-card__title">{book.title}</h3>
-                {book.author && <p className="book-card__author">{book.author}</p>}
-                <p className="book-card__meta">
-                  {book.page_count ? <span>{book.page_count} {t('books.pages')}</span> : null}
-                  {book.category_name && <span className="book-card__category">{book.category_name}</span>}
-                </p>
-              </div>
-              <span className="book-card__chevron" aria-hidden>
-                <IconChevronRight style={{ width: 20, height: 20 }} />
-              </span>
-            </Link>
-          ))}
+        <div className={viewMode === 'grid' ? 'book-grid' : 'book-list'}>
+          {filteredBooks.map((book) => {
+            const prog = book.reading;
+            const pct = prog?.totalPages > 0 ? Math.round((prog.page / prog.totalPages) * 100) : 0;
+            return (
+              <Link key={book.id} to={`/books/${book.id}/detail`} className={viewMode === 'grid' ? 'book-grid-card' : 'book-card'}>
+                <div className="book-card__cover-wrap">
+                  <BookCover coverUrl={getBookCoverUrl(book, initData)} size={viewMode === 'grid' ? 'cover' : 'sm'} alt={book.title} />
+                  {pct > 0 && pct < 100 && (
+                    <div className="book-card__progress" title={`${pct}%`}>
+                      <div className="book-card__progress-fill" style={{ width: `${pct}%` }} />
+                    </div>
+                  )}
+                </div>
+                <div className="book-card__body">
+                  <h3 className="book-card__title">{book.title}</h3>
+                  {book.author && <p className="book-card__author">{book.author}</p>}
+                  <p className="book-card__meta">
+                    {book.page_count ? <span>{book.page_count} {t('books.pages')}</span> : null}
+                    {pct > 0 && <span className="book-card__progress-pct">{pct}%</span>}
+                    {book.category_name && <span className="book-card__category">{book.category_name}</span>}
+                  </p>
+                </div>
+                {viewMode === 'list' && (
+                  <span className="book-card__chevron" aria-hidden>
+                    <IconChevronRight style={{ width: 20, height: 20 }} />
+                  </span>
+                )}
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

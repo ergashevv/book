@@ -88,7 +88,7 @@ export default function BookDetail({ initData }) {
         <button type="button" className="btn book-detail__btn" onClick={handleAddToCart}>Continue shopping</button>
         <Link to="/cart" className="btn btn-secondary book-detail__btn">View cart</Link>
         {displayBook?.id && (
-          <Link to={`/books/${displayBook.id}`} className="btn btn-secondary book-detail__btn" style={{ marginTop: 8 }}>
+          <Link to={`/books/${displayBook.id}`} className="btn btn-secondary book-detail__btn">
             {t('bookDetail.read')}
           </Link>
         )}

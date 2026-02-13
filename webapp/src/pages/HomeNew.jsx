@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useLang } from '../contexts/LangContext';
 import { useTelegram } from '../useTelegram';
+import { useReading } from '../contexts/ReadingContext';
 import { fetchBooks, fetchVendors, fetchAuthors, fetchBanner } from '../api/content';
 import { IconSearch, IconChevronRight } from '../components/Icons';
 import BookCover from '../components/BookCover';
@@ -9,6 +10,8 @@ import BookCover from '../components/BookCover';
 export default function HomeNew() {
   const { t } = useLang();
   const { initData } = useTelegram();
+  const { getRecentlyRead } = useReading();
+  const continueReading = getRecentlyRead();
   const [topBooks, setTopBooks] = useState([]);
   const [vendors, setVendors] = useState([]);
   const [authors, setAuthors] = useState([]);
@@ -68,6 +71,29 @@ export default function HomeNew() {
         </div>
         <div className="banner__book">APOLLO</div>
       </Link>
+
+      {continueReading.length > 0 && (
+        <section className="home-section animate-fade-in-up" style={{ animationDelay: '0.03s', animationFillMode: 'both' }}>
+          <div className="section-head">
+            <h3 className="section-title">{t('home.continueReading')}</h3>
+            <Link to="/books" className="section-link">{t('home.seeAll')} <IconChevronRight style={{ width: 16, height: 16, marginLeft: 2 }} /></Link>
+          </div>
+          <div className="continue-scroll">
+            {continueReading.map((item) => (
+              <Link key={item.id} to={`/books/${item.id}`} className="continue-card">
+                <BookCover coverUrl={item.coverUrl} size="md" alt={item.title} />
+                <div className="continue-card__body">
+                  <span className="continue-card__title">{item.title || t('reader.pageTitle')}</span>
+                  <span className="continue-card__meta">{Math.round(item.progressPct)}% {t('home.read')} · {item.page}/{item.totalPages}</span>
+                  <div className="continue-card__progress">
+                    <div className="continue-card__progress-fill" style={{ width: `${item.progressPct}%` }} />
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="home-section animate-fade-in-up" style={{ animationDelay: '0.05s', animationFillMode: 'both' }}>
         <div className="section-head">

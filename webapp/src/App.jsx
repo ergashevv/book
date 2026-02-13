@@ -70,11 +70,11 @@ function AppContent() {
     return <AppLoadingScreen t={t} />;
   }
 
-  const isDev = !initData && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-  const hasTelegramUser = !!initData && !!tgUser;
-  const hasAppUser = !!user;
+  const isDev = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && !initData;
+  const hasTelegramUser = Boolean(initData && tgUser);
+  const hasAppUser = Boolean(user && typeof user === 'object');
   const showMainApp = hasAppUser || hasTelegramUser;
-  const displayUser = user || (tgUser ? { id: tgUser.id, name: [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' '), phone: '', first_name: tgUser.first_name, last_name: tgUser.last_name, username: tgUser.username } : null);
+  const displayUser = user || (tgUser ? { id: tgUser.id, name: [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ').trim() || 'User', phone: '', first_name: tgUser.first_name, last_name: tgUser.last_name, username: tgUser.username } : null);
 
   if (!isRestoring && !showMainApp && !isAuthPath) {
     return <Navigate to="/splash" replace />;

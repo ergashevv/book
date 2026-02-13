@@ -11,12 +11,14 @@ export default function BookCover({ coverUrl, size = 'md', alt = '', className =
     sm: { width: 52, height: 70, icon: 24 },
     md: { width: 140, height: 'auto', aspectRatio: '2/3', icon: 40 },
     lg: { width: 160, height: 220, icon: 64 },
+    cover: { width: '100%', height: '100%', objectFit: 'cover', icon: 48 },
   };
   const s = sizeMap[size];
   const style = {
     width: s.width,
     ...(s.height && { height: s.height }),
     ...(s.aspectRatio && { aspectRatio: s.aspectRatio }),
+    ...(s.objectFit && { objectFit: s.objectFit }),
   };
 
   const showImage = coverUrl && !error;

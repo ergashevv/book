@@ -18,14 +18,23 @@ export function AuthProvider({ children }) {
   const [isRestoring, setIsRestoring] = useState(true);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEYS.user);
-      if (raw) setUser(JSON.parse(raw));
-      setOnboardingSeen(localStorage.getItem(STORAGE_KEYS.onboarding) === '1');
-      const method = localStorage.getItem(STORAGE_KEYS.authMethod);
-      if (method === 'telegram' || method === 'sms') setAuthMethod(method);
-    } catch (e) {}
-    setIsRestoring(false);
+    let cancelled = false;
+    const restore = () => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.user);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (!cancelled && parsed && typeof parsed === 'object') setUser(parsed);
+        }
+        const seen = localStorage.getItem(STORAGE_KEYS.onboarding) === '1';
+        if (!cancelled) setOnboardingSeen(seen);
+        const method = localStorage.getItem(STORAGE_KEYS.authMethod);
+        if ((method === 'telegram' || method === 'sms') && !cancelled) setAuthMethod(method);
+      } catch (_) {}
+      if (!cancelled) setIsRestoring(false);
+    };
+    restore();
+    return () => { cancelled = true; };
   }, []);
 
   const persistUser = useCallback((u) => {

@@ -63,7 +63,8 @@ export async function fetchBooks(initData) {
     const raw = await apiGet('/books', initData);
     const list = takeList(raw);
     return list.map(normalizeBook).filter(Boolean);
-  } catch {
+  } catch (e) {
+    if (typeof console !== 'undefined' && console.warn) console.warn('fetchBooks fallback to mock', e?.message);
     return [...MOCK_BOOKS];
   }
 }
@@ -73,7 +74,8 @@ export async function fetchAuthors(initData) {
     const raw = await apiGet('/authors', initData);
     const list = takeList(raw);
     return list.map(normalizeAuthor).filter(Boolean);
-  } catch {
+  } catch (e) {
+    if (typeof console !== 'undefined' && console.warn) console.warn('fetchAuthors fallback to mock', e?.message);
     return [...MOCK_AUTHORS];
   }
 }
@@ -83,7 +85,8 @@ export async function fetchVendors(initData) {
     const raw = await apiGet('/vendors', initData);
     const list = takeList(raw);
     return list.map(normalizeVendor).filter(Boolean);
-  } catch {
+  } catch (e) {
+    if (typeof console !== 'undefined' && console.warn) console.warn('fetchVendors fallback to mock', e?.message);
     return [...MOCK_VENDORS];
   }
 }

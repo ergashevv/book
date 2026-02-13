@@ -12,7 +12,7 @@ const HomeIcon = ({ className = '', ...props }) => (
 
 const tabs = [
   { path: '/', labelKey: 'nav.home', icon: HomeIcon },
-  { path: '/category', labelKey: 'nav.category', icon: IconBook },
+  { path: '/books', labelKey: 'nav.library', icon: IconBook },
   { path: '/cart', labelKey: 'nav.cart', icon: IconCart, badge: true },
   { path: '/profile', labelKey: 'nav.profile', icon: IconUser },
 ];
