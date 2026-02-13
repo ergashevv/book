@@ -7,7 +7,8 @@ function headers(initData) {
 }
 
 export async function apiGet(path, initData) {
-  const res = await fetch(API + path, { headers: headers(initData) });
+  const url = API + path + (initData ? (path.includes('?') ? '&' : '?') + 'initData=' + encodeURIComponent(initData) : '');
+  const res = await fetch(url, { headers: headers(initData) });
   if (!res.ok) throw new Error(res.status === 401 ? 'AUTH_REQUIRED' : await res.text());
   return res.json();
 }
