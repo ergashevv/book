@@ -28,7 +28,8 @@ export default function Reader({ initData }) {
   });
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
-  const [uiVisible, setUiVisible] = useState(true);
+  const [uiVisible, setUiVisible] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const touchStartX = useRef(0);
   const didSwipe = useRef(false);
 
@@ -85,11 +86,15 @@ export default function Reader({ initData }) {
       const ctx = canvas.getContext('2d');
       const container = containerRef.current;
       const baseWidth = page.getViewport({ scale: 1 }).width;
-      const maxWidth = container ? container.clientWidth - 40 : 360;
-      const scaleFinal = Math.min((maxWidth / baseWidth) * scale, 3);
-      const viewport = page.getViewport({ scale: scaleFinal });
+      const maxWidth = container ? container.clientWidth : 360;
+      const dpr = Math.max(2, window.devicePixelRatio || 2);
+      const scaleLogical = Math.min((maxWidth / baseWidth) * scale, 3);
+      const scaleRender = scaleLogical * dpr;
+      const viewport = page.getViewport({ scale: scaleRender });
       canvas.width = viewport.width;
       canvas.height = viewport.height;
+      canvas.style.width = viewport.width / dpr + 'px';
+      canvas.style.height = viewport.height / dpr + 'px';
       await page.render({ canvasContext: ctx, viewport }).promise;
     },
     [pdfDoc, scale]
@@ -117,11 +122,12 @@ export default function Reader({ initData }) {
     const w = rect.width;
     if (!uiVisible) {
       setUiVisible(true);
+      setMenuOpen(false);
       return;
     }
-    if (x < w * 0.33) goPrev();
-    else if (x > w * 0.66) goNext();
-    else setUiVisible(false);
+    if (x < w * 0.25) goPrev();
+    else if (x > w * 0.75) goNext();
+    else { setUiVisible(false); setMenuOpen(false); }
   };
 
   const handleTouchStart = (e) => {
@@ -167,50 +173,46 @@ export default function Reader({ initData }) {
 
   return (
     <div className={`reader-wrap ${!uiVisible ? 'reader-ui-hidden' : ''}`} data-theme={theme}>
-      <header className="reader-toolbar" onClick={(e) => e.stopPropagation()}>
-        <Link to="/books">{t('reader.exit')}</Link>
-        <span className="reader-progress">
-          {currentPage} / {totalPages}
-        </span>
-        <div className="reader-zoom">
-          <button
-            type="button"
-            onClick={() => setZoomIndex((i) => Math.max(0, i - 1))}
-            disabled={zoomIndex <= 0}
-            aria-label={t('reader.zoomOut')}
-          >
-            −
-          </button>
-          <span>{Math.round(scale * 100)}%</span>
-          <button
-            type="button"
-            onClick={() => setZoomIndex((i) => Math.min(ZOOM_LEVELS.length - 1, i + 1))}
-            disabled={zoomIndex >= ZOOM_LEVELS.length - 1}
-            aria-label={t('reader.zoomIn')}
-          >
-            +
-          </button>
-        </div>
-        <div style={{ display: 'flex', gap: 4 }}>
-          {THEMES.map((th) => (
+      {uiVisible && (
+        <header className="reader-toolbar reader-toolbar--minimal" onClick={(e) => e.stopPropagation()}>
+          <Link to="/books" className="reader-toolbar__exit">{t('reader.exit')}</Link>
+          <span className="reader-progress reader-progress--center">
+            {currentPage} / {totalPages}
+          </span>
+          <div className="reader-toolbar__menu">
             <button
-              key={th.id}
               type="button"
-              onClick={() => setTheme(th.id)}
-              style={{
-                padding: '4px 8px',
-                fontSize: 11,
-                borderRadius: 4,
-                background: theme === th.id ? 'rgba(255,255,255,0.25)' : 'transparent',
-                border: '1px solid rgba(255,255,255,0.3)',
-                color: 'inherit',
-              }}
+              className="reader-toolbar__menu-btn"
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-label="Menyu"
             >
-              {t(th.labelKey)}
+              ⋮
             </button>
-          ))}
-        </div>
-      </header>
+            {menuOpen && (
+              <div className="reader-menu-dropdown">
+                <div className="reader-menu-row">
+                  <span>{t('reader.zoomOut')}</span>
+                  <button type="button" onClick={() => setZoomIndex((i) => Math.max(0, i - 1))} disabled={zoomIndex <= 0}>−</button>
+                  <span>{Math.round(scale * 100)}%</span>
+                  <button type="button" onClick={() => setZoomIndex((i) => Math.min(ZOOM_LEVELS.length - 1, i + 1))} disabled={zoomIndex >= ZOOM_LEVELS.length - 1}>+</button>
+                </div>
+                <div className="reader-menu-row reader-menu-themes">
+                  {THEMES.map((th) => (
+                    <button
+                      key={th.id}
+                      type="button"
+                      className={theme === th.id ? 'reader-menu-theme reader-menu-theme--active' : 'reader-menu-theme'}
+                      onClick={() => { setTheme(th.id); setMenuOpen(false); }}
+                    >
+                      {t(th.labelKey)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </header>
+      )}
 
       <div
         className="reader-pages"
@@ -228,20 +230,15 @@ export default function Reader({ initData }) {
         </div>
       </div>
 
-      <nav className="reader-nav" onClick={(e) => e.stopPropagation()}>
-        <button type="button" onClick={goPrev} disabled={currentPage <= 1}>
-          {t('reader.prevPage')}
-        </button>
-        <div className="reader-progress-bar">
-          <div className="reader-progress-fill" style={{ width: `${progressPct}%` }} />
-        </div>
-        <span className="reader-progress">
-          {currentPage} / {totalPages}
-        </span>
-        <button type="button" onClick={goNext} disabled={currentPage >= totalPages}>
-          {t('reader.nextPage')}
-        </button>
-      </nav>
+      {uiVisible && (
+        <nav className="reader-nav reader-nav--minimal" onClick={(e) => e.stopPropagation()}>
+          <button type="button" onClick={goPrev} disabled={currentPage <= 1}>{t('reader.prevPage')}</button>
+          <div className="reader-progress-bar">
+            <div className="reader-progress-fill" style={{ width: `${progressPct}%` }} />
+          </div>
+          <button type="button" onClick={goNext} disabled={currentPage >= totalPages}>{t('reader.nextPage')}</button>
+        </nav>
+      )}
     </div>
   );
 }

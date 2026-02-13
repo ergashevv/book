@@ -6,7 +6,9 @@ import { useLang } from '../contexts/LangContext';
 export default function Home({ initData }) {
   const { t } = useLang();
   const [categories, setCategories] = useState([]);
+  const [continueReading, setContinueReading] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingContinue, setLoadingContinue] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -21,26 +23,68 @@ export default function Home({ initData }) {
         }
       })
       .finally(() => setLoading(false));
+  }, [initData, t]);
+
+  useEffect(() => {
+    apiGet('/me/continue-reading', initData)
+      .then(setContinueReading)
+      .catch(() => setContinueReading([]))
+      .finally(() => setLoadingContinue(false));
   }, [initData]);
 
   return (
-    <div className="app">
-      <header className="header">
-        <h1>📚 Kitobxona</h1>
-      </header>
-      <div className="content">
-        <div className="hero">
-          <h2 className="hero__title">Kitobxona</h2>
-          <p className="hero__sub">{t('home.welcomeHint')} {t('home.booksLink')} {t('home.welcomeHint2')}</p>
-          <div className="hero__cta">
-            <Link to="/books" className="btn">{t('home.booksLink')} →</Link>
+    <div className="content">
+      <div className="hero">
+        <h2 className="hero__title">{t('home.heroTitle')}</h2>
+        <p className="hero__sub">{t('home.heroSub')}</p>
+      </div>
+
+      {!loadingContinue && (
+        <section className="home-section">
+          <div className="section-head">
+            <h3 className="section-title">{t('home.continueReading')}</h3>
+            {continueReading.length > 0 && (
+              <Link to="/books" className="section-link">{t('home.popularBooks')}</Link>
+            )}
           </div>
-        </div>
-        <p className="section-title">{t('home.categories')}</p>
+          {continueReading.length > 0 ? (
+            <div className="continue-scroll">
+              {continueReading.map((item) => {
+                const pct = item.page_count > 0 ? Math.round((item.page_number / item.page_count) * 100) : 0;
+                return (
+                  <Link
+                    key={item.book_id}
+                    to={`/books/${item.book_id}/detail`}
+                    className="continue-card"
+                  >
+                    <div className="continue-card__cover">📕</div>
+                    <div className="continue-card__body">
+                      <span className="continue-card__title">{item.title}</span>
+                      <span className="continue-card__meta">
+                        {item.page_number} / {item.page_count || '—'} {t('books.pages')}
+                      </span>
+                      {item.page_count > 0 && (
+                        <div className="continue-card__progress">
+                          <div className="continue-card__progress-fill" style={{ width: `${pct}%` }} />
+                        </div>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="home-empty">{t('home.noContinueReading')}</p>
+          )}
+        </section>
+      )}
+
+      <section className="home-section">
+        <h3 className="section-title">{t('home.categories')}</h3>
         {loading && <p className="muted">{t('home.loading')}</p>}
-        {error && <p style={{ color: 'var(--accent)' }}>{t('home.error')}: {error}</p>}
+        {error && <p className="home-error">{t('home.error')}: {error}</p>}
         {!loading && !error && categories.length === 0 && (
-          <p style={{ color: 'var(--muted)' }}>{t('home.noCategories')}</p>
+          <p className="home-empty">{t('home.noCategories')}</p>
         )}
         <div className="cat-grid">
           {categories.map((cat) => (
@@ -50,7 +94,10 @@ export default function Home({ initData }) {
             </Link>
           ))}
         </div>
-      </div>
+        <div className="hero__cta" style={{ marginTop: 16 }}>
+          <Link to="/books" className="btn">{t('home.booksLink')} →</Link>
+        </div>
+      </section>
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { useLang } from './contexts/LangContext';
 import Layout from './components/Layout';
 import Home from './pages/Home';
 import Books from './pages/Books';
+import BookDetail from './pages/BookDetail';
 import Reader from './pages/Reader';
 import Profile from './pages/Profile';
 
@@ -40,6 +41,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Home user={user} initData={initData} isDev={isDev} />} />
           <Route path="/books" element={<Books initData={initData} />} />
+          <Route path="/books/:bookId/detail" element={<BookDetail initData={initData} />} />
           <Route path="/profile" element={<Profile user={user} isDev={isDev} />} />
         </Route>
         <Route path="/books/:bookId" element={<Reader initData={initData} />} />

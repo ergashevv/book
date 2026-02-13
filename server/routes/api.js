@@ -76,4 +76,19 @@ router.post('/books/:id/progress', authMiddleware, (req, res) => {
   res.json({ ok: true, page_number });
 });
 
+// Continue reading: oxirgi o'qilgan kitoblar (progress bo'yicha)
+router.get('/me/continue-reading', authMiddleware, (req, res) => {
+  const userId = req.telegramUser.id;
+  const rows = db.prepare(`
+    SELECT r.book_id, r.page_number, r.updated_at, b.title, b.author, b.page_count, b.cover_url, c.name_uz as category_name
+    FROM reading_progress r
+    JOIN books b ON b.id = r.book_id
+    JOIN categories c ON c.id = b.category_id
+    WHERE r.user_id = ? AND r.page_number > 0
+    ORDER BY r.updated_at DESC
+    LIMIT 10
+  `).all(userId);
+  res.json(rows);
+});
+
 export default router;
