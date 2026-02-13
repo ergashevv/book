@@ -42,7 +42,7 @@ function Dashboard({ token }) {
   const [categories, setCategories] = useState([]);
   const [books, setBooks] = useState([]);
   const [newCat, setNewCat] = useState({ name_uz: '', slug: '' });
-  const [upload, setUpload] = useState({ title: '', author: '', category_id: '', file: null });
+  const [upload, setUpload] = useState({ title: '', author: '', category_id: '', file: null, cover: null });
   const [loading, setLoading] = useState(false);
 
   const auth = () => ({ Authorization: 'Bearer ' + token });
@@ -74,6 +74,7 @@ function Dashboard({ token }) {
     if (!upload.title || !upload.category_id || !upload.file) return;
     const fd = new FormData();
     fd.append('pdf', upload.file);
+    if (upload.cover) fd.append('cover', upload.cover);
     fd.append('title', upload.title);
     fd.append('author', upload.author);
     fd.append('category_id', upload.category_id);
@@ -84,7 +85,7 @@ function Dashboard({ token }) {
       body: fd,
     })
       .then((r) => r.json())
-      .then(() => { setUpload({ title: '', author: '', category_id: '', file: null }); load(); })
+      .then(() => { setUpload({ title: '', author: '', category_id: '', file: null, cover: null }); load(); })
       .catch(console.error)
       .finally(() => setLoading(false));
   };
@@ -148,6 +149,13 @@ function Dashboard({ token }) {
               accept=".pdf"
               onChange={(e) => setUpload((u) => ({ ...u, file: e.target.files?.[0] || null }))}
             />
+            <label style={{ display: 'block', marginTop: 8 }}>
+              Muqova (ixtiyoriy): <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(e) => setUpload((u) => ({ ...u, cover: e.target.files?.[0] || null }))}
+              />
+            </label>
           </div>
           <button type="submit" disabled={loading || !upload.file}>Yuklash</button>
         </form>

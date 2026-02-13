@@ -19,12 +19,12 @@ if (token) {
 
   bot.command('start', (ctx) => {
     const isHttps = webAppUrl.startsWith('https://');
-    const text = "📚 Kitob o'qish ilovasiga xush kelibsiz! Quyidagi tugmani bosing va kitoblarni o'qing.";
+    const text = "Kitobxona – kitob o'qish ilovasiga xush kelibsiz. Quyidagi tugmani bosing va kitoblarni o'qing.";
     if (isHttps) {
       ctx.reply(text, {
         reply_markup: {
           inline_keyboard: [[
-            { text: "📖 Kitobxonga o'tish", web_app: { url: webAppUrl } }
+            { text: "Kitobxonga o'tish", web_app: { url: webAppUrl } }
           ]]
         }
       });

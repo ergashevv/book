@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { apiGet } from '../api';
+import { apiGet, getBookCoverUrl } from '../api';
 import { useLang } from '../contexts/LangContext';
 import BookCover from '../components/BookCover';
+import Banner from '../components/Banner';
+import NewsCard from '../components/NewsCard';
 import { IconBook } from '../components/Icons';
 import { SkeletonContinueRow } from '../components/Skeleton';
 import EmptyState from '../components/EmptyState';
 import { IconChevronRight } from '../components/Icons';
+import { BANNERS, NEWS } from '../bannersNews';
 
 export default function Home({ initData }) {
   const { t } = useLang();
@@ -37,8 +40,19 @@ export default function Home({ initData }) {
       .finally(() => setLoadingContinue(false));
   }, [initData]);
 
+  const heroBanner = BANNERS.find((b) => b.type === 'hero') || BANNERS[0];
+  const latestNews = NEWS.slice(0, 3);
+
   return (
     <div className="content">
+      <Banner
+        gradient={heroBanner.gradient}
+        titleKey={heroBanner.titleKey}
+        subKey={heroBanner.subKey}
+        ctaKey={heroBanner.ctaKey}
+        link={heroBanner.link}
+        size="lg"
+      />
       <div className="hero">
         <h2 className="hero__title">{t('home.heroTitle')}</h2>
         <p className="hero__sub">{t('home.heroSub')}</p>
@@ -66,7 +80,7 @@ export default function Home({ initData }) {
                   to={`/books/${item.book_id}/detail`}
                   className="continue-card"
                 >
-                  <BookCover coverUrl={item.cover_url} size="md" alt="" />
+                  <BookCover coverUrl={getBookCoverUrl({ id: item.book_id, cover_url: item.cover_url }, initData)} size="md" alt="" />
                   <div className="continue-card__body">
                     <span className="continue-card__title">{item.title}</span>
                     <span className="continue-card__meta">
@@ -87,6 +101,25 @@ export default function Home({ initData }) {
             <Link to="/books" className="btn btn-secondary">{t('home.booksLink')}</Link>
           </EmptyState>
         )}
+      </section>
+
+      <section className="home-section">
+        <div className="section-head">
+          <h3 className="section-title">{t('news.latest')}</h3>
+          <Link to="/news" className="section-link">
+            {t('news.title')}
+            <IconChevronRight style={{ width: 16, height: 16, marginLeft: 2 }} />
+          </Link>
+        </div>
+        {latestNews.map((item) => (
+          <NewsCard
+            key={item.id}
+            titleKey={item.titleKey}
+            excerptKey={item.excerptKey}
+            dateKey={item.dateKey}
+            tagKey={item.tagKey}
+          />
+        ))}
       </section>
 
       <section className="home-section">

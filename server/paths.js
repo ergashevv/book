@@ -10,8 +10,11 @@ const DATA_DIR = process.env.DATA_DIR || null;
 
 export const dataDir = DATA_DIR || path.join(projectRoot, 'data');
 export const uploadsDir = DATA_DIR ? path.join(DATA_DIR, 'uploads') : path.join(projectRoot, 'uploads');
-/** file_path (DB da "uploads/...") ni to‘liq yo‘lga aylantirish uchun */
+/** Muqova rasmlar: uploads/covers/ */
+export const coversDir = path.join(uploadsDir, 'covers');
+/** file_path (DB da "uploads/...") ni to'liq yo'lga aylantirish uchun */
 export const fileRoot = DATA_DIR || projectRoot;
 
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+if (!fs.existsSync(coversDir)) fs.mkdirSync(coversDir, { recursive: true });

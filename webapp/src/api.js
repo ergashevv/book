@@ -6,6 +6,19 @@ function headers(initData) {
   return h;
 }
 
+/**
+ * Kitob muqovasi uchun ishlatiladigan URL.
+ * cover_url to'liq http(s) bo'lsa o'sha, aks holda API /books/:id/cover (auth uchun initData query).
+ */
+export function getBookCoverUrl(book, initData) {
+  if (!book || !book.cover_url) return null;
+  const url = book.cover_url.trim();
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  const base = `${API}/books/${book.id}/cover`;
+  if (initData) return base + '?initData=' + encodeURIComponent(initData);
+  return base;
+}
+
 export async function apiGet(path, initData) {
   const url = API + path + (initData ? (path.includes('?') ? '&' : '?') + 'initData=' + encodeURIComponent(initData) : '');
   const res = await fetch(url, { headers: headers(initData) });

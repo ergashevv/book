@@ -7,6 +7,7 @@ import BottomNav from './BottomNav';
 const TITLES = {
   '/': 'layout.appName',
   '/books': 'books.title',
+  '/news': 'news.title',
   '/profile': 'profile.title',
 };
 

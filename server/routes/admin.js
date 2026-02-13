@@ -4,13 +4,19 @@ import fs from 'fs';
 import multer from 'multer';
 import db from '../db.js';
 import { validateAdminPassword } from '../auth.js';
-import { uploadsDir, fileRoot } from '../paths.js';
+import { uploadsDir, coversDir, fileRoot } from '../paths.js';
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadsDir),
+  destination: (req, file, cb) => {
+    const dir = file.fieldname === 'cover' ? coversDir : uploadsDir;
+    cb(null, dir);
+  },
   filename: (req, file, cb) => {
-    const safe = Date.now() + '-' + (file.originalname || 'book').replace(/[^a-zA-Z0-9.-]/g, '_');
-    cb(null, safe);
+    const raw = file.originalname || (file.fieldname === 'cover' ? 'cover' : 'book');
+    const base = Date.now() + '-' + raw.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const ext = file.fieldname === 'cover' ? (path.extname(raw).toLowerCase() || '.jpg') : '';
+    const name = file.fieldname === 'cover' ? base.replace(/\.[^.]+$/, '') + ext : base;
+    cb(null, name);
   },
 });
 const upload = multer({ storage, limits: { fileSize: 100 * 1024 * 1024 } }); // 100MB
@@ -58,15 +64,16 @@ router.get('/books', adminAuth, (req, res) => {
   res.json(rows);
 });
 
-router.post('/books', adminAuth, upload.single('pdf'), async (req, res) => {
-  const file = req.file;
-  if (!file) return res.status(400).json({ error: 'PDF file required' });
-  const { title, author, category_id } = req.body || {};
+router.post('/books', adminAuth, upload.fields([{ name: 'pdf', maxCount: 1 }, { name: 'cover', maxCount: 1 }]), async (req, res) => {
+  const files = req.files || {};
+  const pdfFile = files.pdf?.[0];
+  if (!pdfFile) return res.status(400).json({ error: 'PDF file required' });
+  const { title, author, category_id, cover_url: coverUrlBody } = req.body || {};
   if (!title || !category_id) return res.status(400).json({ error: 'title and category_id required' });
 
   let pageCount = 0;
   try {
-    const pdfPath = path.join(uploadsDir, file.filename);
+    const pdfPath = path.join(uploadsDir, pdfFile.filename);
     const pdfParse = (await import('pdf-parse')).default;
     const data = await pdfParse(fs.readFileSync(pdfPath));
     pageCount = data.numpages || 0;
@@ -74,11 +81,17 @@ router.post('/books', adminAuth, upload.single('pdf'), async (req, res) => {
     console.warn('Could not get page count:', e.message);
   }
 
-  const relativePath = path.join('uploads', file.filename);
+  const relativePath = path.join('uploads', pdfFile.filename).split(path.sep).join('/');
+  let coverUrl = coverUrlBody && typeof coverUrlBody === 'string' ? coverUrlBody.trim() : null;
+  if (files.cover?.[0]) {
+    const coverFile = files.cover[0];
+    coverUrl = 'uploads/covers/' + coverFile.filename;
+  }
+
   const r = db.prepare(`
-    INSERT INTO books (category_id, title, author, file_name, file_path, page_count)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `).run(category_id, title, author || null, file.originalname || file.filename, relativePath, pageCount);
+    INSERT INTO books (category_id, title, author, file_name, file_path, page_count, cover_url)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(category_id, title, author || null, pdfFile.originalname || pdfFile.filename, relativePath, pageCount, coverUrl);
 
   res.json({
     id: r.lastInsertRowid,
@@ -87,6 +100,7 @@ router.post('/books', adminAuth, upload.single('pdf'), async (req, res) => {
     category_id,
     file_path: relativePath,
     page_count: pageCount,
+    cover_url: coverUrl,
   });
 });
 

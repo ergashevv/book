@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { apiGet } from '../api';
+import { apiGet, getBookCoverUrl } from '../api';
 import { useLang } from '../contexts/LangContext';
 import BookCover from '../components/BookCover';
 import { IconArrowLeft } from '../components/Icons';
@@ -52,7 +52,7 @@ export default function BookDetail({ initData }) {
         {t('bookDetail.back')}
       </Link>
       <div className="book-detail">
-        <BookCover coverUrl={book.cover_url} size="lg" alt={book.title} className="book-detail__cover" />
+        <BookCover coverUrl={getBookCoverUrl(book, initData)} size="lg" alt={book.title} className="book-detail__cover" />
         <h1 className="book-detail__title">{book.title}</h1>
         {book.author && <p className="book-detail__author">{book.author}</p>}
         {book.page_count > 0 && (

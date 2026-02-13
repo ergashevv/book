@@ -55,6 +55,24 @@ router.get('/books/:id/file', authMiddleware, (req, res) => {
   res.sendFile(fullPath, { headers: { 'Content-Type': 'application/pdf' } });
 });
 
+// Kitob muqovasi: cover_url relative bo'lsa (uploads/covers/...) faylni yuboradi, http(s) bo'lsa redirect
+router.get('/books/:id/cover', authMiddleware, (req, res) => {
+  const row = db.prepare('SELECT cover_url FROM books WHERE id = ?').get(req.params.id);
+  if (!row || !row.cover_url) return res.status(404).send();
+  const url = row.cover_url.trim();
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return res.redirect(302, url);
+  }
+  const fullPath = path.join(fileRoot, url);
+  if (!path.resolve(fullPath).startsWith(path.resolve(fileRoot)) || !fs.existsSync(fullPath)) {
+    return res.status(404).send();
+  }
+  const ext = path.extname(url).toLowerCase();
+  const contentType = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp' }[ext] || 'image/jpeg';
+  res.setHeader('Cache-Control', 'public, max-age=86400');
+  res.sendFile(fullPath, { headers: { 'Content-Type': contentType } });
+});
+
 // Reading progress
 router.get('/books/:id/progress', authMiddleware, (req, res) => {
   const userId = req.telegramUser.id;

@@ -1,6 +1,6 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { useEffect, useState, useMemo } from 'react';
-import { apiGet } from '../api';
+import { apiGet, getBookCoverUrl } from '../api';
 import { useLang } from '../contexts/LangContext';
 import BookCover from '../components/BookCover';
 import { IconSearch } from '../components/Icons';
@@ -102,7 +102,7 @@ export default function Books({ initData }) {
         <div className="book-list">
           {filteredBooks.map((book) => (
             <Link key={book.id} to={`/books/${book.id}/detail`} className="book-card">
-              <BookCover coverUrl={book.cover_url} size="sm" alt={book.title} />
+              <BookCover coverUrl={getBookCoverUrl(book, initData)} size="sm" alt={book.title} />
               <div className="book-card__body">
                 <h3 className="book-card__title">{book.title}</h3>
                 {book.author && <p className="book-card__author">{book.author}</p>}
