@@ -6,7 +6,7 @@ import cors from 'cors';
 import db from './db.js';
 import apiRoutes from './routes/api.js';
 import adminRoutes from './routes/admin.js';
-import { bot, botWebhookHandler, setupBot } from './bot.js';
+import { bot, botWebhookHandler, setupBot, useWebhook } from './bot.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -15,8 +15,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Telegram: webhook (HTTPS da) yoki polling (localhost da)
-const useWebhook = process.env.WEBHOOK_URL && !process.env.WEBHOOK_URL.includes('localhost');
+// Telegram: webhook (Render/Vercel) yoki polling (localhost). Yo‘l bot.js dagi useWebhook bilan bir xil.
 if (process.env.BOT_TOKEN && useWebhook) {
   app.use('/telegram-webhook', botWebhookHandler);
 }

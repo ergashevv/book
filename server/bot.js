@@ -65,4 +65,4 @@ async function setupBot() {
   }
 }
 
-export { bot, botWebhookHandler, startPolling, setupBot };
+export { bot, botWebhookHandler, startPolling, setupBot, useWebhook };
