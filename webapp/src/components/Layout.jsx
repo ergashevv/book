@@ -5,12 +5,12 @@ import { IconSearch, IconBell } from './Icons';
 import BottomNav from './BottomNav';
 
 const TITLES = {
-  '/': 'layout.appName',
-  '/books': 'books.title',
+  '/': 'nav.home',
+  '/books': 'nav.library',
   '/news': 'news.title',
   '/profile': 'profile.title',
-  '/category': 'Category',
-  '/cart': 'Cart',
+  '/category': 'category.title',
+  '/cart': 'nav.cart',
 };
 
 function useDocumentTitle() {
@@ -21,12 +21,13 @@ function useDocumentTitle() {
     let titleKey = TITLES[path];
     if (path.startsWith('/books/') && path.endsWith('/detail')) titleKey = 'bookDetail.pageTitle';
     if (path.match(/^\/books\/[^/]+$/) && !path.endsWith('/detail')) titleKey = 'reader.pageTitle';
-    const title = titleKey ? (TITLES[titleKey] ? t(titleKey) : titleKey) : t('layout.appName');
+    const title = titleKey ? t(titleKey) : t('layout.appName');
     document.title = `${title} · Sphere`;
   }, [location.pathname, t]);
 }
 
 export default function Layout() {
+  const { t } = useLang();
   useDocumentTitle();
   const location = useLocation();
   const path = location.pathname || '';
@@ -35,10 +36,10 @@ export default function Layout() {
   return (
     <div className="layout">
       {!showSimpleHeader && (
-        <header className="layout__header">
-          <Link to="/search" className="layout__icon" aria-label="Search"><IconSearch style={{ width: 22, height: 22 }} /></Link>
-          <h1 className="layout__title">Home</h1>
-          <Link to="/notifications" className="layout__icon" aria-label="Notifications"><IconBell style={{ width: 22, height: 22 }} /></Link>
+        <header className="layout__header layout__header--kindle">
+          <Link to="/search" className="layout__icon" aria-label={t('home.search')}><IconSearch style={{ width: 22, height: 22 }} /></Link>
+          <h1 className="layout__title">{t(TITLES[path] || 'layout.appName')}</h1>
+          <Link to="/notifications" className="layout__icon" aria-label={t('nav.notifications')}><IconBell style={{ width: 22, height: 22 }} /></Link>
         </header>
       )}
       <main className="layout__main">

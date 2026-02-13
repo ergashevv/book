@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { apiGet, getBookCoverUrl } from '../api';
 import { useLang } from '../contexts/LangContext';
 import { useCart } from '../contexts/CartContext';
+import { useReading } from '../contexts/ReadingContext';
 import BookCover from '../components/BookCover';
 import { IconArrowLeft, IconHeart } from '../components/Icons';
 import Spinner from '../components/Spinner';
@@ -14,6 +15,7 @@ export default function BookDetail({ initData }) {
   const navigate = useNavigate();
   const { t } = useLang();
   const { addItem } = useCart();
+  const { getProgress } = useReading();
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -59,39 +61,45 @@ export default function BookDetail({ initData }) {
   }
 
   const coverUrl = displayBook?.cover_url ?? displayBook?.coverUrl ?? (initData && displayBook ? getBookCoverUrl(displayBook, initData) : null);
+  const progress = displayBook?.id ? getProgress(displayBook.id) : null;
+  const progressPct = progress?.totalPages > 0 ? (progress.page / progress.totalPages) * 100 : 0;
+  const hasStarted = progressPct > 0 && progressPct < 100;
+  const isFinished = progressPct >= 100;
 
   const handleAddToCart = () => {
     addItem({ id: displayBook.id, title: displayBook.title, price, coverUrl }, quantity);
   };
 
   return (
-    <div className="content">
-      <header className="page-header">
-        <button type="button" className="page-header__back" onClick={() => navigate(-1)}><IconArrowLeft style={{ width: 24, height: 24 }} /></button>
+    <div className="content content--kindle">
+      <header className="page-header page-header--kindle">
+        <button type="button" className="page-header__back" onClick={() => navigate(-1)} aria-label={t('bookDetail.back')}><IconArrowLeft style={{ width: 24, height: 24 }} /></button>
         <h1 className="page-header__title page-header__title--ellipsis">{displayBook?.title}</h1>
-        <button type="button" className="page-header__icon" aria-label="Favorite"><IconHeart style={{ width: 22, height: 22 }} /></button>
+        <button type="button" className="page-header__icon" aria-label={t('bookDetail.favorite')}><IconHeart style={{ width: 22, height: 22 }} /></button>
       </header>
-      <div className="book-detail book-detail--commerce">
-        <BookCover coverUrl={coverUrl} size="lg" alt={displayBook?.title} className="book-detail__cover" />
-        <h2 className="book-detail__title">{displayBook?.title}</h2>
-        {vendor && <p className="book-detail__vendor">Vendor: {vendor.name}</p>}
-        <p className="book-detail__meta">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-        <div className="book-detail__review">Review ★ 4.0 (44)</div>
-        <div className="book-detail__purchase">
-          <div className="book-detail__qty">
-            <button type="button" onClick={() => setQuantity((q) => Math.max(1, q - 1))}>−</button>
-            <span>{quantity}</span>
-            <button type="button" onClick={() => setQuantity((q) => q + 1)}>+</button>
-          </div>
-          <span className="book-detail__price">${(price * quantity).toFixed(2)}</span>
-        </div>
-        <button type="button" className="btn book-detail__btn" onClick={handleAddToCart}>Continue shopping</button>
-        <Link to="/cart" className="btn btn-secondary book-detail__btn">View cart</Link>
-        {displayBook?.id && (
-          <Link to={`/books/${displayBook.id}`} className="btn btn-secondary book-detail__btn">
-            {t('bookDetail.read')}
-          </Link>
+      <div className="book-detail book-detail--kindle">
+        <BookCover coverUrl={coverUrl} size="lg" alt={displayBook?.title} className="book-detail__cover book-detail__cover--kindle" />
+        <h2 className="book-detail__title book-detail__title--kindle">{displayBook?.title}</h2>
+        {(displayBook?.author || vendor) && (
+          <p className="book-detail__author book-detail__author--kindle">{displayBook?.author || (vendor && vendor.name)}</p>
         )}
+        {hasStarted && progress && (
+          <p className="book-detail__progress-line">{Math.round(progressPct)}% {t('home.read')} · {progress.page} / {progress.totalPages}</p>
+        )}
+        <div className="book-detail__actions book-detail__actions--kindle">
+          {displayBook?.id && (
+            <Link to={`/books/${displayBook.id}`} className="btn book-detail__btn book-detail__btn--primary">
+              {hasStarted ? t('home.resume') : t('home.startReading')}
+            </Link>
+          )}
+          <button type="button" className="btn btn-secondary book-detail__btn" onClick={handleAddToCart}>{t('bookDetail.addToCart')}</button>
+          <Link to="/cart" className="btn btn-secondary book-detail__btn">{t('bookDetail.viewCart')}</Link>
+        </div>
+        <div className="book-detail__about">
+          <h3 className="book-detail__about-title">{t('bookDetail.about')}</h3>
+          <p className="book-detail__about-text">{displayBook?.description || 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'}</p>
+        </div>
+        {vendor && <p className="book-detail__vendor book-detail__vendor--kindle">{vendor.name}</p>}
       </div>
     </div>
   );

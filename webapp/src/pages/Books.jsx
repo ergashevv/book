@@ -14,6 +14,13 @@ const SORT_OPTIONS = [
   { id: 'progress', labelKey: 'library.sortProgress' },
 ];
 
+const FILTER_OPTIONS = [
+  { id: 'all', labelKey: 'library.filterAll' },
+  { id: 'reading', labelKey: 'library.filterReading' },
+  { id: 'unread', labelKey: 'library.filterUnread' },
+  { id: 'read', labelKey: 'library.filterRead' },
+];
+
 export default function Books({ initData }) {
   const { t } = useLang();
   const { getProgress } = useReading();
@@ -25,8 +32,9 @@ export default function Books({ initData }) {
   const [catLoading, setCatLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('libraryView') || 'list' : 'list'));
+  const [viewMode, setViewMode] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('libraryView') || 'grid' : 'grid'));
   const [sortBy, setSortBy] = useState('recent');
+  const [filterBy, setFilterBy] = useState('all');
 
   useEffect(() => {
     apiGet('/categories', initData)
@@ -61,14 +69,31 @@ export default function Books({ initData }) {
       );
     }
     const withProgress = list.map((b) => ({ ...b, reading: getProgress(b.id) }));
-    if (sortBy === 'az') return [...withProgress].sort((a, b) => (a.title || '').localeCompare(b.title || ''));
-    if (sortBy === 'progress') return [...withProgress].sort((a, b) => {
+    let filtered = withProgress;
+    if (filterBy === 'reading') {
+      filtered = withProgress.filter((b) => {
+        const pct = b.reading?.totalPages > 0 ? (b.reading.page / b.reading.totalPages) * 100 : 0;
+        return pct > 0 && pct < 100;
+      });
+    } else if (filterBy === 'unread') {
+      filtered = withProgress.filter((b) => {
+        const pct = b.reading?.totalPages > 0 ? (b.reading.page / b.reading.totalPages) * 100 : 0;
+        return pct === 0;
+      });
+    } else if (filterBy === 'read') {
+      filtered = withProgress.filter((b) => {
+        const pct = b.reading?.totalPages > 0 ? (b.reading.page / b.reading.totalPages) * 100 : 0;
+        return pct >= 100;
+      });
+    }
+    if (sortBy === 'az') return [...filtered].sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+    if (sortBy === 'progress') return [...filtered].sort((a, b) => {
       const pa = a.reading?.totalPages > 0 ? (a.reading.page / a.reading.totalPages) * 100 : 0;
       const pb = b.reading?.totalPages > 0 ? (b.reading.page / b.reading.totalPages) * 100 : 0;
       return pb - pa;
     });
-    return [...withProgress].sort((a, b) => (b.reading?.lastOpened ?? 0) - (a.reading?.lastOpened ?? 0));
-  }, [books, searchQuery, sortBy, getProgress]);
+    return [...filtered].sort((a, b) => (b.reading?.lastOpened ?? 0) - (a.reading?.lastOpened ?? 0));
+  }, [books, searchQuery, sortBy, filterBy, getProgress]);
 
   const setCategory = (id) => {
     if (id) setSearchParams({ category_id: id });
@@ -82,7 +107,7 @@ export default function Books({ initData }) {
   };
 
   return (
-    <div className="content">
+    <div className="content content--kindle">
       <div className="books-search-wrap">
         <span className="books-search-icon" aria-hidden>
           <IconSearch style={{ width: 20, height: 20 }} />
@@ -95,6 +120,20 @@ export default function Books({ initData }) {
           onChange={(e) => setSearchQuery(e.target.value)}
           aria-label={t('books.search')}
         />
+      </div>
+
+      {/* Kindle-style: All / Reading / Unread / Read */}
+      <div className="library-filters-kindle">
+        {FILTER_OPTIONS.map((opt) => (
+          <button
+            key={opt.id}
+            type="button"
+            className={`library-filter-tab ${filterBy === opt.id ? 'library-filter-tab--active' : ''}`}
+            onClick={() => setFilterBy(opt.id)}
+          >
+            {t(opt.labelKey)}
+          </button>
+        ))}
       </div>
 
       <div className="library-toolbar">

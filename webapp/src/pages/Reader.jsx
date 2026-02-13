@@ -477,38 +477,44 @@ export default function Reader({ initData }) {
       </div>
 
       {uiVisible && (
-        <nav className="reader-nav reader-nav--minimal" onClick={(e) => e.stopPropagation()}>
+        <nav className="reader-nav reader-nav--kindle" onClick={(e) => e.stopPropagation()}>
           <button
             type="button"
-            className="reader-nav__btn"
+            className="reader-nav__btn reader-nav__btn--prev"
             onClick={goPrev}
             disabled={currentPage <= 1}
           >
             <IconChevronLeft style={{ width: 22, height: 22 }} />
-            <span>{t('reader.prevPage')}</span>
+            <span className="reader-nav__label">{t('reader.prevPage')}</span>
           </button>
-          <form className="reader-nav__page-jump" onSubmit={handlePageInputSubmit}>
-            <input
-              type="number"
-              min={1}
-              max={totalPages || 1}
-              value={pageInput}
-              onChange={(e) => setPageInput(e.target.value)}
-              onBlur={() => goToPage(pageInput)}
-              className="reader-nav__page-input"
-              aria-label={t('reader.pageNumber')}
-            />
-          </form>
-          <div className="reader-progress-bar">
-            <div className="reader-progress-fill" style={{ width: `${progressPct}%` }} />
+          <div className="reader-nav__center">
+            <form className="reader-nav__page-jump" onSubmit={handlePageInputSubmit}>
+              <input
+                type="number"
+                min={1}
+                max={totalPages || 1}
+                value={pageInput}
+                onChange={(e) => setPageInput(e.target.value)}
+                onBlur={() => goToPage(pageInput)}
+                className="reader-nav__page-input"
+                aria-label={t('reader.pageNumber')}
+              />
+            </form>
+            <span className="reader-nav__of">{currentPage} / {totalPages}</span>
+            {minsLeft > 0 && (
+              <span className="reader-nav__time-left">{minsLeft} {t('reader.minLeft')}</span>
+            )}
+            <div className="reader-progress-bar reader-progress-bar--bottom">
+              <div className="reader-progress-fill" style={{ width: `${progressPct}%` }} />
+            </div>
           </div>
           <button
             type="button"
-            className="reader-nav__btn"
+            className="reader-nav__btn reader-nav__btn--next"
             onClick={goNext}
             disabled={currentPage >= totalPages}
           >
-            <span>{t('reader.nextPage')}</span>
+            <span className="reader-nav__label">{t('reader.nextPage')}</span>
             <IconChevronRight style={{ width: 22, height: 22 }} />
           </button>
         </nav>
