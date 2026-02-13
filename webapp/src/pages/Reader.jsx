@@ -1,17 +1,18 @@
 import { useParams, Link } from 'react-router-dom';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { apiGet, apiPost, fetchBookFile } from '../api';
+import { useLang } from '../contexts/LangContext';
 
 const pdfjsLib = window.pdfjsLib;
-
-const THEMES = [
-  { id: 'sepia', label: 'Sepia' },
-  { id: 'light', label: 'Oq' },
-  { id: 'dark', label: 'Qora' },
-];
 const ZOOM_LEVELS = [0.75, 1, 1.25, 1.5, 1.75, 2];
 
 export default function Reader({ initData }) {
+  const { t } = useLang();
+  const THEMES = [
+    { id: 'sepia', labelKey: 'reader.sepia' },
+    { id: 'light', labelKey: 'reader.light' },
+    { id: 'dark', labelKey: 'reader.dark' },
+  ];
   const { bookId } = useParams();
   const [book, setBook] = useState(null);
   const [pdfDoc, setPdfDoc] = useState(null);
@@ -58,7 +59,7 @@ export default function Reader({ initData }) {
     fetchBookFile(bookId, initData)
       .then((arrayBuffer) => {
         if (!pdfjsLib) {
-          setError('PDF.js yuklanmadi. Internetingizni tekshiring.');
+          setError(t('reader.pdfJsError'));
           return;
         }
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -71,10 +72,10 @@ export default function Reader({ initData }) {
         setLoading(false);
       })
       .catch((e) => {
-        setError(e.message || 'PDF yuklanmadi');
+        setError(e.message || t('reader.pdfError'));
         setLoading(false);
       });
-  }, [bookId, book]);
+  }, [bookId, book, t]);
 
   const renderPage = useCallback(
     async (pageNum) => {
@@ -143,7 +144,7 @@ export default function Reader({ initData }) {
     return (
       <div className="app">
         <div className="content" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 200 }}>
-          Kitob yuklanmoqda...
+          {t('reader.bookLoading')}
         </div>
       </div>
     );
@@ -153,7 +154,7 @@ export default function Reader({ initData }) {
     return (
       <div className="app">
         <header className="header">
-          <Link to="/books">← Orqaga</Link>
+          <Link to="/books">{t('reader.back')}</Link>
         </header>
         <div className="content">
           <div className="card">
@@ -167,7 +168,7 @@ export default function Reader({ initData }) {
   return (
     <div className={`reader-wrap ${!uiVisible ? 'reader-ui-hidden' : ''}`} data-theme={theme}>
       <header className="reader-toolbar" onClick={(e) => e.stopPropagation()}>
-        <Link to="/books">← Chiqish</Link>
+        <Link to="/books">{t('reader.exit')}</Link>
         <span className="reader-progress">
           {currentPage} / {totalPages}
         </span>
@@ -176,7 +177,7 @@ export default function Reader({ initData }) {
             type="button"
             onClick={() => setZoomIndex((i) => Math.max(0, i - 1))}
             disabled={zoomIndex <= 0}
-            aria-label="Kichiklashtirish"
+            aria-label={t('reader.zoomOut')}
           >
             −
           </button>
@@ -185,27 +186,27 @@ export default function Reader({ initData }) {
             type="button"
             onClick={() => setZoomIndex((i) => Math.min(ZOOM_LEVELS.length - 1, i + 1))}
             disabled={zoomIndex >= ZOOM_LEVELS.length - 1}
-            aria-label="Kattalashtirish"
+            aria-label={t('reader.zoomIn')}
           >
             +
           </button>
         </div>
         <div style={{ display: 'flex', gap: 4 }}>
-          {THEMES.map((t) => (
+          {THEMES.map((th) => (
             <button
-              key={t.id}
+              key={th.id}
               type="button"
-              onClick={() => setTheme(t.id)}
+              onClick={() => setTheme(th.id)}
               style={{
                 padding: '4px 8px',
                 fontSize: 11,
                 borderRadius: 4,
-                background: theme === t.id ? 'rgba(255,255,255,0.25)' : 'transparent',
+                background: theme === th.id ? 'rgba(255,255,255,0.25)' : 'transparent',
                 border: '1px solid rgba(255,255,255,0.3)',
                 color: 'inherit',
               }}
             >
-              {t.label}
+              {t(th.labelKey)}
             </button>
           ))}
         </div>
@@ -220,7 +221,7 @@ export default function Reader({ initData }) {
         role="button"
         tabIndex={0}
         onKeyDown={(e) => { if (e.key === 'ArrowLeft') goPrev(); if (e.key === 'ArrowRight') goNext(); }}
-        aria-label="Sahifa: chap/o‘ng bosing, suring yoki markazda bosing – panel yashirish"
+        aria-label={t('reader.pageAria')}
       >
         <div className="reader-page">
           <canvas ref={canvasRef} />
@@ -229,7 +230,7 @@ export default function Reader({ initData }) {
 
       <nav className="reader-nav" onClick={(e) => e.stopPropagation()}>
         <button type="button" onClick={goPrev} disabled={currentPage <= 1}>
-          ← Oldingi
+          {t('reader.prevPage')}
         </button>
         <div className="reader-progress-bar">
           <div className="reader-progress-fill" style={{ width: `${progressPct}%` }} />
@@ -238,7 +239,7 @@ export default function Reader({ initData }) {
           {currentPage} / {totalPages}
         </span>
         <button type="button" onClick={goNext} disabled={currentPage >= totalPages}>
-          Keyingi →
+          {t('reader.nextPage')}
         </button>
       </nav>
     </div>

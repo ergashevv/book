@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { apiGet } from '../api';
+import { useLang } from '../contexts/LangContext';
 
-export default function Home({ user, initData, isDev }) {
+export default function Home({ initData }) {
+  const { t } = useLang();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,7 +15,7 @@ export default function Home({ user, initData, isDev }) {
       .catch((e) => {
         const msg = e.message || '';
         if (msg === 'AUTH_REQUIRED' || msg.includes('pattern')) {
-          setError("Kirish tasdiqlanmadi. Botda «Kitobxonga o'tish» tugmasini qayta bosing.");
+          setError(t('home.authError'));
         } else {
           setError(msg);
         }
@@ -27,24 +29,14 @@ export default function Home({ user, initData, isDev }) {
         <h1>📚 Kitobxona</h1>
       </header>
       <div className="content">
-        {/* Profile */}
-        <div className="card">
-          <h3 style={{ marginTop: 0 }}>Profil</h3>
-          {user && (
-            <p>
-              {user.first_name} {user.last_name || ''}
-              {user.username && ` @${user.username}`}
-            </p>
-          )}
-          {isDev && <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>Dev rejim</p>}
-        </div>
-
-        {/* Kategoriyalar */}
-        <h3>Kategoriyalar</h3>
-        {loading && <p>Yuklanmoqda...</p>}
-        {error && <p style={{ color: 'var(--accent)' }}>Xatolik: {error}</p>}
+        <p style={{ color: 'var(--muted)', marginBottom: 16 }}>
+          {t('home.welcomeHint')} <Link to="/books">{t('home.booksLink')}</Link> {t('home.welcomeHint2')}
+        </p>
+        <h3 style={{ marginBottom: 8 }}>{t('home.categories')}</h3>
+        {loading && <p>{t('home.loading')}</p>}
+        {error && <p style={{ color: 'var(--accent)' }}>{t('home.error')}: {error}</p>}
         {!loading && !error && categories.length === 0 && (
-          <p style={{ color: 'var(--muted)' }}>Hali kategoriya yoʻq. Admin paneldan qoʻshing.</p>
+          <p style={{ color: 'var(--muted)' }}>{t('home.noCategories')}</p>
         )}
         {categories.map((cat) => (
           <Link key={cat.id} to={`/books?category_id=${cat.id}`} style={{ display: 'block', marginBottom: 8 }}>
