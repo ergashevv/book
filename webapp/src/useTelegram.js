@@ -10,6 +10,7 @@ export function useTelegram() {
     if (tg) {
       tg.ready();
       tg.expand();
+      if (tg.enableClosingConfirmation) tg.enableClosingConfirmation();
       const data = tg.initData || '';
       setInitData(data);
       if (data) {
@@ -21,7 +22,7 @@ export function useTelegram() {
       }
     }
     // Dev: Telegram emulyatsiya
-    if (!tg?.initData && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    if (!window.Telegram?.WebApp?.initData && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
       setUser({
         id: 123456789,
         first_name: 'Dev',
