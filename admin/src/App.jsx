@@ -27,12 +27,12 @@ function Login({ onLogin }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-900">
-      <div className="w-full max-w-sm rounded-xl bg-slate-800 border border-slate-700 p-6 shadow-xl">
-        <h1 className="text-xl font-bold text-center mb-6 text-orange-400">Admin – Kitobxona</h1>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-app-bg">
+      <div className="w-full max-w-sm rounded-app bg-app-surface border border-app-border p-6 shadow-app-card">
+        <h1 className="text-xl font-bold text-center mb-6 text-app-accent">Sphere · Admin</h1>
         <form onSubmit={submit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-400 mb-1">Parol</label>
+            <label className="block text-sm font-medium text-app-muted mb-1">Parol</label>
             <input
               type="password"
               placeholder="Parolni kiriting"
@@ -42,11 +42,11 @@ function Login({ onLogin }) {
               autoFocus
             />
           </div>
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50"
+            className="w-full py-3 bg-app-accent hover:bg-app-accent-hover text-white font-semibold rounded-app-sm disabled:opacity-50 transition-colors"
           >
             {loading ? 'Kirilmoqda...' : 'Kirish'}
           </button>
@@ -62,7 +62,11 @@ function NavLink({ to, children }) {
   return (
     <Link
       to={to}
-      className={`block px-3 py-2 rounded-lg mb-1 ${active ? 'bg-orange-500/20 text-orange-400' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}
+      className={`block px-3 py-2.5 rounded-app-sm mb-1 text-sm font-medium transition-colors ${
+        active
+          ? 'bg-app-accent-soft text-app-accent'
+          : 'text-app-muted hover:bg-app-surface-hover hover:text-app-text'
+      }`}
     >
       {children}
     </Link>
@@ -71,26 +75,26 @@ function NavLink({ to, children }) {
 
 function Layout({ token, onLogout, children }) {
   return (
-    <div className="flex min-h-screen bg-slate-900">
-      <aside className="w-56 flex-shrink-0 bg-slate-800 border-r border-slate-700 flex flex-col">
-        <div className="p-4 border-b border-slate-700">
-          <h2 className="font-bold text-orange-400">Kitobxona Admin</h2>
+    <div className="flex min-h-screen bg-app-bg">
+      <aside className="w-56 flex-shrink-0 bg-app-bg-elevated border-r border-app-border flex flex-col shadow-app">
+        <div className="p-4 border-b border-app-border">
+          <h2 className="font-bold text-app-accent text-lg">Sphere Admin</h2>
         </div>
         <nav className="p-2 flex-1">
           <NavLink to="/">Boshqaruv</NavLink>
           <NavLink to="/categories">Kategoriyalar</NavLink>
           <NavLink to="/books">Kitoblar</NavLink>
         </nav>
-        <div className="p-2 border-t border-slate-700">
+        <div className="p-2 border-t border-app-border">
           <button
             onClick={onLogout}
-            className="w-full px-3 py-2 rounded-lg text-left text-slate-400 hover:bg-slate-700 hover:text-white text-sm"
+            className="w-full px-3 py-2.5 rounded-app-sm text-left text-app-muted hover:bg-app-surface-hover hover:text-app-text text-sm font-medium"
           >
             Chiqish
           </button>
         </div>
       </aside>
-      <main className="flex-1 overflow-auto p-6">{children}</main>
+      <main className="flex-1 overflow-auto p-6 bg-app-bg">{children}</main>
     </div>
   );
 }
@@ -108,18 +112,18 @@ function DashboardHome({ token }) {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6 text-slate-100">Boshqaruv</h1>
+      <h1 className="text-2xl font-bold mb-6 text-app-text">Boshqaruv</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-        <div className="rounded-xl bg-slate-800 border border-slate-700 p-5">
-          <p className="text-slate-400 text-sm">Kategoriyalar</p>
-          <p className="text-2xl font-bold text-orange-400">{stats.categories}</p>
+        <div className="rounded-app bg-app-surface border border-app-border p-5 shadow-app-card">
+          <p className="text-app-muted text-sm font-medium">Kategoriyalar</p>
+          <p className="text-2xl font-bold text-app-accent mt-1">{stats.categories}</p>
         </div>
-        <div className="rounded-xl bg-slate-800 border border-slate-700 p-5">
-          <p className="text-slate-400 text-sm">Kitoblar</p>
-          <p className="text-2xl font-bold text-orange-400">{stats.books}</p>
+        <div className="rounded-app bg-app-surface border border-app-border p-5 shadow-app-card">
+          <p className="text-app-muted text-sm font-medium">Kitoblar</p>
+          <p className="text-2xl font-bold text-app-accent mt-1">{stats.books}</p>
         </div>
       </div>
-      <p className="text-slate-500 text-sm">Chap menyudan Kategoriyalar yoki Kitoblar bo‘limini tanlang.</p>
+      <p className="text-app-muted text-sm">Chap menyudan Kategoriyalar yoki Kitoblar bo‘limini tanlang.</p>
     </div>
   );
 }
@@ -144,16 +148,19 @@ function CategoriesPage({ token }) {
       body: JSON.stringify(form),
     })
       .then((r) => r.json())
-      .then(() => { setForm({ name_uz: '', slug: '' }); fetch(API + '/categories', { headers: auth() }).then((r) => r.json()).then(setCategories); })
+      .then(() => {
+        setForm({ name_uz: '', slug: '' });
+        fetch(API + '/categories', { headers: auth() }).then((r) => r.json()).then(setCategories);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   };
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6 text-slate-100">Kategoriyalar</h1>
-      <div className="rounded-xl bg-slate-800 border border-slate-700 p-5 mb-6 max-w-md">
-        <h2 className="font-semibold mb-4 text-slate-200">Yangi kategoriya</h2>
+      <h1 className="text-2xl font-bold mb-6 text-app-text">Kategoriyalar</h1>
+      <div className="rounded-app bg-app-surface border border-app-border p-5 mb-6 max-w-md shadow-app-card">
+        <h2 className="font-semibold mb-4 text-app-text">Yangi kategoriya</h2>
         <form onSubmit={submit} className="space-y-3">
           <input
             placeholder="Nomi (uz)"
@@ -167,26 +174,30 @@ function CategoriesPage({ token }) {
             onChange={(e) => setForm((c) => ({ ...c, slug: e.target.value }))}
             className="w-full"
           />
-          <button type="submit" disabled={loading} className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white">
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-4 py-2.5 bg-app-accent hover:bg-app-accent-hover text-white font-semibold rounded-app-sm disabled:opacity-50"
+          >
             Qo‘shish
           </button>
         </form>
       </div>
-      <div className="rounded-xl border border-slate-700 overflow-hidden">
+      <div className="rounded-app border border-app-border overflow-hidden bg-app-surface shadow-app-card">
         <table className="w-full text-left">
-          <thead className="bg-slate-800">
+          <thead className="bg-app-bg-elevated">
             <tr>
-              <th className="px-4 py-3 text-slate-400 font-medium">ID</th>
-              <th className="px-4 py-3 text-slate-400 font-medium">Nomi</th>
-              <th className="px-4 py-3 text-slate-400 font-medium">Slug</th>
+              <th className="px-4 py-3 text-app-muted font-medium text-sm">ID</th>
+              <th className="px-4 py-3 text-app-muted font-medium text-sm">Nomi</th>
+              <th className="px-4 py-3 text-app-muted font-medium text-sm">Slug</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-700">
+          <tbody className="divide-y divide-app-border">
             {categories.map((c) => (
-              <tr key={c.id} className="bg-slate-800/50 hover:bg-slate-800">
-                <td className="px-4 py-3 text-slate-500">{c.id}</td>
-                <td className="px-4 py-3 text-slate-100">{c.name_uz}</td>
-                <td className="px-4 py-3 text-slate-400">{c.slug}</td>
+              <tr key={c.id} className="hover:bg-app-surface-hover transition-colors">
+                <td className="px-4 py-3 text-app-muted text-sm">{c.id}</td>
+                <td className="px-4 py-3 text-app-text font-medium">{c.name_uz}</td>
+                <td className="px-4 py-3 text-app-muted text-sm">{c.slug}</td>
               </tr>
             ))}
           </tbody>
@@ -220,21 +231,26 @@ function BooksPage({ token }) {
     fd.append('category_id', upload.category_id);
     fetch(API + '/books', { method: 'POST', headers: auth(), body: fd })
       .then((r) => r.json())
-      .then(() => { setUpload({ title: '', author: '', category_id: '', file: null, cover: null }); fetch(API + '/books', { headers: auth() }).then((r) => r.json()).then(setBooks); })
+      .then(() => {
+        setUpload({ title: '', author: '', category_id: '', file: null, cover: null });
+        fetch(API + '/books', { headers: auth() }).then((r) => r.json()).then(setBooks);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   };
 
   const deleteBook = (id) => {
     if (!confirm('O‘chirilsinmi?')) return;
-    fetch(API + '/books/' + id, { method: 'DELETE', headers: auth() }).then(() => fetch(API + '/books', { headers: auth() }).then((r) => r.json()).then(setBooks));
+    fetch(API + '/books/' + id, { method: 'DELETE', headers: auth() }).then(() =>
+      fetch(API + '/books', { headers: auth() }).then((r) => r.json()).then(setBooks)
+    );
   };
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6 text-slate-100">Kitoblar</h1>
-      <div className="rounded-xl bg-slate-800 border border-slate-700 p-5 mb-6 max-w-lg">
-        <h2 className="font-semibold mb-4 text-slate-200">PDF kitob yuklash</h2>
+      <h1 className="text-2xl font-bold mb-6 text-app-text">Kitoblar</h1>
+      <div className="rounded-app bg-app-surface border border-app-border p-5 mb-6 max-w-lg shadow-app-card">
+        <h2 className="font-semibold mb-4 text-app-text">PDF kitob yuklash</h2>
         <form onSubmit={uploadBook} className="space-y-3">
           <input
             placeholder="Kitob nomi"
@@ -257,40 +273,62 @@ function BooksPage({ token }) {
           >
             <option value="">Kategoriyani tanlang</option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id}>{c.name_uz}</option>
+              <option key={c.id} value={c.id}>
+                {c.name_uz}
+              </option>
             ))}
           </select>
           <div>
-            <label className="block text-sm text-slate-400 mb-1">PDF fayl</label>
-            <input type="file" accept=".pdf" onChange={(e) => setUpload((u) => ({ ...u, file: e.target.files?.[0] || null }))} className="w-full text-sm" required />
+            <label className="block text-sm text-app-muted mb-1 font-medium">PDF fayl</label>
+            <input
+              type="file"
+              accept=".pdf"
+              onChange={(e) => setUpload((u) => ({ ...u, file: e.target.files?.[0] || null }))}
+              className="w-full text-sm"
+              required
+            />
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1">Muqova (ixtiyoriy)</label>
-            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => setUpload((u) => ({ ...u, cover: e.target.files?.[0] || null }))} className="w-full text-sm" />
+            <label className="block text-sm text-app-muted mb-1 font-medium">Muqova (ixtiyoriy)</label>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(e) => setUpload((u) => ({ ...u, cover: e.target.files?.[0] || null }))}
+              className="w-full text-sm"
+            />
           </div>
-          <button type="submit" disabled={loading || !upload.file} className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white disabled:opacity-50">
+          <button
+            type="submit"
+            disabled={loading || !upload.file}
+            className="px-4 py-2.5 bg-app-accent hover:bg-app-accent-hover text-white font-semibold rounded-app-sm disabled:opacity-50"
+          >
             Yuklash
           </button>
         </form>
       </div>
-      <div className="rounded-xl border border-slate-700 overflow-hidden">
+      <div className="rounded-app border border-app-border overflow-hidden bg-app-surface shadow-app-card">
         <table className="w-full text-left">
-          <thead className="bg-slate-800">
+          <thead className="bg-app-bg-elevated">
             <tr>
-              <th className="px-4 py-3 text-slate-400 font-medium">Nomi</th>
-              <th className="px-4 py-3 text-slate-400 font-medium">Muallif</th>
-              <th className="px-4 py-3 text-slate-400 font-medium">Sahifa</th>
-              <th className="px-4 py-3 text-slate-400 font-medium w-24"></th>
+              <th className="px-4 py-3 text-app-muted font-medium text-sm">Nomi</th>
+              <th className="px-4 py-3 text-app-muted font-medium text-sm">Muallif</th>
+              <th className="px-4 py-3 text-app-muted font-medium text-sm">Sahifa</th>
+              <th className="px-4 py-3 text-app-muted font-medium text-sm w-24"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-700">
+          <tbody className="divide-y divide-app-border">
             {books.map((b) => (
-              <tr key={b.id} className="bg-slate-800/50 hover:bg-slate-800">
-                <td className="px-4 py-3 text-slate-100">{b.title}</td>
-                <td className="px-4 py-3 text-slate-400">{b.author || '—'}</td>
-                <td className="px-4 py-3 text-slate-500">{b.page_count || '?'}</td>
+              <tr key={b.id} className="hover:bg-app-surface-hover transition-colors">
+                <td className="px-4 py-3 text-app-text font-medium">{b.title}</td>
+                <td className="px-4 py-3 text-app-muted">{b.author || '—'}</td>
+                <td className="px-4 py-3 text-app-muted text-sm">{b.page_count || '?'}</td>
                 <td className="px-4 py-3">
-                  <button onClick={() => deleteBook(b.id)} className="text-red-400 hover:text-red-300 text-sm">O‘chirish</button>
+                  <button
+                    onClick={() => deleteBook(b.id)}
+                    className="text-red-600 hover:text-red-700 text-sm font-medium"
+                  >
+                    O‘chirish
+                  </button>
                 </td>
               </tr>
             ))}
@@ -318,9 +356,30 @@ export default function App() {
   return (
     <HashRouter>
       <Routes>
-        <Route path="/" element={<Layout token={token} onLogout={onLogout}><DashboardHome token={token} /></Layout>} />
-        <Route path="/categories" element={<Layout token={token} onLogout={onLogout}><CategoriesPage token={token} /></Layout>} />
-        <Route path="/books" element={<Layout token={token} onLogout={onLogout}><BooksPage token={token} /></Layout>} />
+        <Route
+          path="/"
+          element={
+            <Layout token={token} onLogout={onLogout}>
+              <DashboardHome token={token} />
+            </Layout>
+          }
+        />
+        <Route
+          path="/categories"
+          element={
+            <Layout token={token} onLogout={onLogout}>
+              <CategoriesPage token={token} />
+            </Layout>
+          }
+        />
+        <Route
+          path="/books"
+          element={
+            <Layout token={token} onLogout={onLogout}>
+              <BooksPage token={token} />
+            </Layout>
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </HashRouter>

@@ -9,7 +9,7 @@ const translations = {
   uz: {
     app: { loading: 'Yuklanmoqda...', telegramOnly: 'Bu ilova faqat Telegram orqali ishlatiladi. Bot orqali kirishingiz kerak.' },
     layout: { appName: 'Bosh sahifa' },
-    nav: { home: 'Bosh sahifa', books: 'Kitoblar', news: 'Yangiliklar', profile: 'Profil', aria: 'Asosiy menyu' },
+    nav: { home: 'Bosh sahifa', books: 'Kitoblar', news: 'Yangiliklar', profile: 'Profil', category: 'Kategoriya', cart: 'Savat', aria: 'Asosiy menyu' },
     banner: {
       heroTitle: 'Yangi kitoblar sizni kutmoqda',
       heroSub: 'Har kuni o‘qish – har kuni yangi bilim.',
@@ -81,6 +81,12 @@ const translations = {
       app: 'Ilova',
       appDesc: 'Kitobxona – PDF kitoblarni o‘qish. Kategoriyalar va kitoblar bosh sahifada va Kitoblar bo‘limida.',
       toHome: 'Bosh sahifaga',
+      myAccount: 'Mening hisobim',
+      address: 'Manzil',
+      offers: 'Takliflar va promolar',
+      favorites: 'Sevimlilar',
+      orderHistory: 'Buyurtmalar tarixi',
+      helpCenter: 'Yordam markazi',
     },
     bookDetail: {
       read: 'O‘qish',
@@ -108,7 +114,7 @@ const translations = {
   ru: {
     app: { loading: 'Загрузка...', telegramOnly: 'Это приложение работает только через Telegram. Войдите через бота.' },
     layout: { appName: 'Главная' },
-    nav: { home: 'Главная', books: 'Книги', news: 'Новости', profile: 'Профиль', aria: 'Главное меню' },
+    nav: { home: 'Главная', books: 'Книги', news: 'Новости', profile: 'Профиль', category: 'Категория', cart: 'Корзина', aria: 'Главное меню' },
     banner: {
       heroTitle: 'Новые книги ждут вас',
       heroSub: 'Читайте каждый день – получайте новые знания.',
@@ -180,6 +186,12 @@ const translations = {
       app: 'Приложение',
       appDesc: 'Библиотека – чтение PDF. Категории и книги на главной и в разделе «Книги».',
       toHome: 'На главную',
+      myAccount: 'Мой аккаунт',
+      address: 'Адрес',
+      offers: 'Предложения и промо',
+      favorites: 'Избранное',
+      orderHistory: 'История заказов',
+      helpCenter: 'Центр помощи',
     },
     bookDetail: {
       read: 'Читать',
@@ -207,7 +219,7 @@ const translations = {
   en: {
     app: { loading: 'Loading...', telegramOnly: 'This app only works via Telegram. Please open it from the bot.' },
     layout: { appName: 'Home' },
-    nav: { home: 'Home', books: 'Books', news: 'News', profile: 'Profile', aria: 'Main menu' },
+    nav: { home: 'Home', books: 'Books', news: 'News', profile: 'Profile', category: 'Category', cart: 'Cart', aria: 'Main menu' },
     banner: {
       heroTitle: 'New books are waiting for you',
       heroSub: 'Read every day – learn something new.',
@@ -279,6 +291,12 @@ const translations = {
       app: 'App',
       appDesc: 'Library – read PDF books. Categories and books on Home and in Books.',
       toHome: 'To Home',
+      myAccount: 'My Account',
+      address: 'Address',
+      offers: 'Offers & Promos',
+      favorites: 'Your Favorites',
+      orderHistory: 'Order History',
+      helpCenter: 'Help Center',
     },
     bookDetail: {
       read: 'Read',

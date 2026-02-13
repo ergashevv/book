@@ -1,9 +1,55 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-app-bg: #fefbf5;
+  --color-app-bg-elevated: #fffefb;
+  --color-app-surface: #ffffff;
+  --color-app-surface-hover: #fff8ed;
+  --color-app-accent: #ea580c;
+  --color-app-accent-hover: #c2410c;
+  --color-app-accent-soft: #ffedd5;
+  --color-app-text: #1c1917;
+  --color-app-muted: #78716c;
+  --color-app-border: #f0e6dc;
+  --radius-app: 14px;
+  --radius-app-sm: 10px;
+  --shadow-app: 0 1px 3px rgba(234, 88, 12, 0.06);
+  --shadow-app-card: 0 2px 12px rgba(234, 88, 12, 0.08);
+}
 
 @layer base {
-  body { @apply bg-slate-900 text-slate-100 antialiased; }
-  input, select, textarea { @apply rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 placeholder-slate-500 focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500; }
-  button { @apply rounded-lg font-medium transition-colors; }
+  html, body, #root {
+    min-height: 100%;
+    -webkit-font-smoothing: antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: var(--color-app-bg);
+    color: var(--color-app-text);
+  }
+  input, select, textarea {
+    border-radius: var(--radius-app-sm);
+    border: 1px solid var(--color-app-border);
+    background: var(--color-app-surface);
+    padding: 0.5rem 0.75rem;
+    color: var(--color-app-text);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input::placeholder, textarea::placeholder, select option:first-child {
+    color: var(--color-app-muted);
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--color-app-accent);
+    box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.15);
+  }
+  button {
+    border-radius: var(--radius-app-sm);
+    font-weight: 500;
+    transition: color 0.2s, background-color 0.2s;
+  }
+  a {
+    color: var(--color-app-accent);
+  }
+  a:hover {
+    color: var(--color-app-accent-hover);
+  }
 }
