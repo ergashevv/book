@@ -628,7 +628,25 @@ a .icons-svg, button .icons-svg { color: inherit; }
 }
 .reader-wrap[data-theme="sepia"] .reader-page::before { box-shadow: inset 0 0 80px rgba(139,115,85,0.08); }
 
-/* Splash */
+/* App / Auth yuklanish ekrani – kirguncha va auth tekshirilguncha */
+.app-loading {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #111;
+  color: #fff;
+  padding: 24px;
+}
+.app-loading__logo { margin-bottom: 16px; }
+.app-loading__logo svg { width: 64px; height: 64px; display: block; }
+.app-loading__title { margin: 0 0 24px; font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; }
+.app-loading .spinner { margin-bottom: 12px; }
+.app-loading .spinner__inner { border-top-color: #fff; border-color: rgba(255,255,255,0.2); }
+.app-loading__text { margin: 0; font-size: 0.95rem; color: rgba(255,255,255,0.8); }
+
+/* Splash (onboarding oldingi qisqa ekran) */
 .splash {
   min-height: 100vh;
   display: flex;

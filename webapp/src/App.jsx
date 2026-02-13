@@ -44,21 +44,30 @@ function useIsAuthPath() {
   return AUTH_PATHS.some((p) => path.startsWith(p));
 }
 
+function AppLoadingScreen({ t }) {
+  return (
+    <div className="app-loading">
+      <div className="app-loading__logo" aria-hidden>
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 4L28 16L40 20L28 24L24 36L20 24L8 20L20 16L24 4Z" fill="white" />
+        </svg>
+      </div>
+      <h1 className="app-loading__title">Sphere</h1>
+      <Spinner size="lg" />
+      <p className="app-loading__text">{t('app.loading')}</p>
+    </div>
+  );
+}
+
 function AppContent() {
   const { user, isRestoring } = useAuth();
   const { user: tgUser, initData, ready } = useTelegram();
   const { t } = useLang();
   const isAuthPath = useIsAuthPath();
 
-  if (!ready) {
-    return (
-      <div className="app app--loading">
-        <div className="content content--center">
-          <Spinner size="lg" />
-          <p className="loading-text">{t('app.loading')}</p>
-        </div>
-      </div>
-    );
+  /* Telegram tayyor bo‘lishi va auth (localStorage) tekshirilguncha loader */
+  if (!ready || isRestoring) {
+    return <AppLoadingScreen t={t} />;
   }
 
   const isDev = !initData && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
