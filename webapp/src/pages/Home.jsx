@@ -10,7 +10,14 @@ export default function Home({ user, initData, isDev }) {
   useEffect(() => {
     apiGet('/categories', initData)
       .then(setCategories)
-      .catch((e) => setError(e.message))
+      .catch((e) => {
+        const msg = e.message || '';
+        if (msg === 'AUTH_REQUIRED' || msg.includes('pattern')) {
+          setError("Kirish tasdiqlanmadi. Botda «Kitobxonga o'tish» tugmasini qayta bosing.");
+        } else {
+          setError(msg);
+        }
+      })
       .finally(() => setLoading(false));
   }, [initData]);
 
