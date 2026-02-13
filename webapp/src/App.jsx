@@ -7,6 +7,7 @@ import Spinner from './components/Spinner';
 import HomeNew from './pages/HomeNew';
 import Books from './pages/Books';
 import BookDetail from './pages/BookDetail';
+import GoogleBookDetail from './pages/GoogleBookDetail';
 import Reader from './pages/Reader';
 import News from './pages/News';
 import Profile from './pages/Profile';
@@ -96,6 +97,7 @@ function AppContent() {
         <Route path="/" element={<HomeNew />} />
         <Route path="/books" element={<Books initData={initData} />} />
         <Route path="/books/:bookId/detail" element={<BookDetail initData={initData} />} />
+        <Route path="/books/google/:volumeId/detail" element={<GoogleBookDetail />} />
         <Route path="/category" element={<Category />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/confirm-order" element={<ConfirmOrder />} />
