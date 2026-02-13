@@ -64,12 +64,15 @@ export default function Books({ initData }) {
           <p style={{ color: 'var(--muted)' }}>{t('books.noBooks')}</p>
         )}
         {books.map((book) => (
-          <Link key={book.id} to={`/books/${book.id}`} style={{ display: 'block', marginBottom: 8, color: 'inherit' }}>
-            <div className="card">
-              <strong>{book.title}</strong>
-              {book.author && <p style={{ margin: '4px 0 0', color: 'var(--muted)', fontSize: '0.9rem' }}>{book.author}</p>}
-              <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: 'var(--muted)' }}>
-                {book.page_count ? `${book.page_count} ${t('books.pages')}` : ''} • {book.category_name}
+          <Link key={book.id} to={`/books/${book.id}`} className="book-card">
+            <div className="book-card__cover">📕</div>
+            <div className="book-card__body">
+              <h3 className="book-card__title">{book.title}</h3>
+              {book.author && <p className="book-card__author">{book.author}</p>}
+              <p className="book-card__meta">
+                {book.page_count ? `${book.page_count} ${t('books.pages')}` : ''}
+                {book.page_count && book.category_name ? ' • ' : ''}
+                {book.category_name}
               </p>
             </div>
           </Link>

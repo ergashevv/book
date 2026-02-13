@@ -29,22 +29,27 @@ export default function Home({ initData }) {
         <h1>📚 Kitobxona</h1>
       </header>
       <div className="content">
-        <p style={{ color: 'var(--muted)', marginBottom: 16 }}>
-          {t('home.welcomeHint')} <Link to="/books">{t('home.booksLink')}</Link> {t('home.welcomeHint2')}
-        </p>
-        <h3 style={{ marginBottom: 8 }}>{t('home.categories')}</h3>
-        {loading && <p>{t('home.loading')}</p>}
+        <div className="hero">
+          <h2 className="hero__title">Kitobxona</h2>
+          <p className="hero__sub">{t('home.welcomeHint')} {t('home.booksLink')} {t('home.welcomeHint2')}</p>
+          <div className="hero__cta">
+            <Link to="/books" className="btn">{t('home.booksLink')} →</Link>
+          </div>
+        </div>
+        <p className="section-title">{t('home.categories')}</p>
+        {loading && <p className="muted">{t('home.loading')}</p>}
         {error && <p style={{ color: 'var(--accent)' }}>{t('home.error')}: {error}</p>}
         {!loading && !error && categories.length === 0 && (
           <p style={{ color: 'var(--muted)' }}>{t('home.noCategories')}</p>
         )}
-        {categories.map((cat) => (
-          <Link key={cat.id} to={`/books?category_id=${cat.id}`} style={{ display: 'block', marginBottom: 8 }}>
-            <div className="card" style={{ cursor: 'pointer' }}>
+        <div className="cat-grid">
+          {categories.map((cat) => (
+            <Link key={cat.id} to={`/books?category_id=${cat.id}`} className="cat-card">
+              <span className="cat-card__icon">📖</span>
               {cat.name_uz}
-            </div>
-          </Link>
-        ))}
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );
