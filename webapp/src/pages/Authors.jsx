@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { IconSearch, IconArrowLeft } from '../components/Icons';
-import { MOCK_AUTHORS, CATEGORIES } from '../data/mock';
+import { MOCK_AUTHORS, CATEGORIES } from '../mock';
 
 export default function Authors() {
   const [filter, setFilter] = useState('All');

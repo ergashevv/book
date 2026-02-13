@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useLang } from '../contexts/LangContext';
-import { MOCK_BOOKS, MOCK_VENDORS, MOCK_AUTHORS } from '../data/mock';
+import { MOCK_BOOKS, MOCK_VENDORS, MOCK_AUTHORS } from '../mock';
 import { IconSearch, IconChevronRight } from '../components/Icons';
 import BookCover from '../components/BookCover';
 

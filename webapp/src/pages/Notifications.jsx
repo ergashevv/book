@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { IconArrowLeft } from '../components/Icons';
-import { MOCK_BOOKS } from '../data/mock';
+import { MOCK_BOOKS } from '../mock';
 
 const NOTIFICATIONS = [
   { id: '1', type: 'current', title: 'Carrie Fisher', status: 'On the way', items: 1, bookId: '6' },

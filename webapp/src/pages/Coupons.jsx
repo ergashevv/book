@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { IconArrowLeft } from '../components/Icons';
-import { COUPONS } from '../data/mock';
+import { COUPONS } from '../mock';
 
 export default function Coupons() {
   const copyCode = (code) => {

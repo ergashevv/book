@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IconArrowLeft, IconBell, IconMapPin } from '../components/Icons';
-import { DEFAULT_ADDRESS } from '../data/mock';
+import { DEFAULT_ADDRESS } from '../mock';
 
 export default function Location() {
   const navigate = useNavigate();

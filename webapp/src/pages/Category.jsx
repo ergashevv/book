@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { IconSearch, IconBell } from '../components/Icons';
-import { MOCK_BOOKS, CATEGORIES } from '../data/mock';
+import { MOCK_BOOKS, CATEGORIES } from '../mock';
 import BookCover from '../components/BookCover';
 
 export default function Category() {

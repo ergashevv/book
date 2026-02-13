@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IconArrowLeft } from '../components/Icons';
-import { MOCK_BOOKS } from '../data/mock';
+import { MOCK_BOOKS } from '../mock';
 
 const RECENT_KEY = 'search_recent';
 

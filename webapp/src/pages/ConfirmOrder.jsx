@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { IconArrowLeft, IconBell, IconMapPin, IconCalendar, IconCard } from '../components/Icons';
 import { useCart } from '../contexts/CartContext';
-import { DEFAULT_ADDRESS, PAYMENT_METHODS } from '../data/mock';
+import { DEFAULT_ADDRESS, PAYMENT_METHODS } from '../mock';
 
 export default function ConfirmOrder() {
   const navigate = useNavigate();

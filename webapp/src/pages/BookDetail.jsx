@@ -7,7 +7,7 @@ import BookCover from '../components/BookCover';
 import { IconArrowLeft, IconHeart } from '../components/Icons';
 import Spinner from '../components/Spinner';
 import { SkeletonBookDetail } from '../components/Skeleton';
-import { MOCK_BOOKS, MOCK_VENDORS } from '../data/mock';
+import { MOCK_BOOKS, MOCK_VENDORS } from '../mock';
 
 export default function BookDetail({ initData }) {
   const { bookId } = useParams();

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { IconArrowLeft, IconHeart } from '../components/Icons';
-import { MOCK_BOOKS } from '../data/mock';
+import { MOCK_BOOKS } from '../mock';
 import BookCover from '../components/BookCover';
 
 const favorites = MOCK_BOOKS.slice(0, 3).map((b, i) => ({ ...b, price: 19.99 + i * 2 }));

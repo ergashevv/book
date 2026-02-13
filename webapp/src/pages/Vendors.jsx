@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { IconSearch, IconArrowLeft } from '../components/Icons';
-import { MOCK_VENDORS, CATEGORIES } from '../data/mock';
+import { MOCK_VENDORS, CATEGORIES } from '../mock';
 
 export default function Vendors() {
   const [filter, setFilter] = useState('All');

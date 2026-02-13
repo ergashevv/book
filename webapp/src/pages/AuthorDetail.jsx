@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { IconSearch, IconArrowLeft } from '../components/Icons';
-import { MOCK_AUTHORS, MOCK_BOOKS } from '../data/mock';
+import { MOCK_AUTHORS, MOCK_BOOKS } from '../mock';
 import BookCover from '../components/BookCover';
 
 export default function AuthorDetail() {
