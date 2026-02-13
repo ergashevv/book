@@ -1,0 +1,33 @@
+* { box-sizing: border-box; }
+:root {
+  --bg: #1a1a2e;
+  --surface: #16213e;
+  --accent: #e94560;
+  --text: #eee;
+  --muted: #a0a0a0;
+  --book-bg: #2d2d2d;
+  --book-paper: #f4f1ea;
+}
+html, body, #root { height: 100%; margin: 0; font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); }
+body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+a { color: var(--accent); text-decoration: none; }
+button { cursor: pointer; font: inherit; }
+
+.app { max-width: 480px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; }
+.header { padding: 12px 16px; background: var(--surface); display: flex; align-items: center; gap: 12px; }
+.header h1 { margin: 0; font-size: 1.25rem; }
+.content { flex: 1; padding: 16px; overflow: auto; }
+.card { background: var(--surface); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+.btn { background: var(--accent); color: #fff; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--muted); }
+
+/* Reader: kitob ko'rinishi */
+.reader-wrap { flex: 1; display: flex; flex-direction: column; background: var(--book-bg); overflow: hidden; }
+.reader-toolbar { padding: 8px 16px; display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); }
+.reader-pages { flex: 1; display: flex; justify-content: center; align-items: center; gap: 8px; padding: 16px; overflow: auto; }
+.reader-page { background: var(--book-paper); box-shadow: 0 4px 20px rgba(0,0,0,0.4); border-radius: 2px; overflow: hidden; max-width: 100%; max-height: 100%; }
+.reader-page canvas { display: block; max-width: 100%; height: auto !important; }
+.reader-nav { display: flex; gap: 8px; align-items: center; justify-content: center; padding: 12px; }
+.reader-nav button { padding: 10px 20px; border-radius: 8px; background: var(--surface); color: var(--text); border: 1px solid var(--muted); }
+.reader-progress { font-size: 0.9rem; color: var(--muted); }

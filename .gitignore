@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+webapp/node_modules/
+admin/node_modules/
+
+# Env (parollar, tokenlar)
+.env
+.env.local
+.env.*.local
+
+# Build
+dist/
+webapp/dist/
+admin/dist/
+
+# Ma'lumotlar va yuklangan fayllar
+data/
+uploads/
+
+# Katta PDF (loyiha ildizida test uchun)
+*.pdf
+
+# Loglar
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Test / coverage
+coverage/
+.nyc_output/
