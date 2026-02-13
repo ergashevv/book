@@ -25,7 +25,7 @@ export default function AuthorDetail() {
         <Link to="/search" className="page-header__icon"><IconSearch style={{ width: 22, height: 22 }} /></Link>
       </header>
       <div className="author-detail">
-        <div className="author-detail__avatar" />
+        <div className="author-detail__avatar" style={author.image ? { backgroundImage: `url(${author.image})`, backgroundSize: 'cover' } : {}} />
         <p className="author-detail__role">{author.role}</p>
         <h2 className="author-detail__name">{author.name}</h2>
         <div className="author-detail__rating">★ {author.rating}</div>

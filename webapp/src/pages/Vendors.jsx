@@ -29,7 +29,7 @@ export default function Vendors() {
       <div className="vendors-grid">
         {vendors.map((v) => (
           <Link key={v.id} to={`/vendors/${v.id}`} className="vendor-card">
-            <div className="vendor-card__logo" />
+            {v.logo ? <img src={v.logo} alt="" className="vendor-card__logo" width={64} height={64} /> : <div className="vendor-card__logo" />}
             <span className="vendor-card__name">{v.name}</span>
             <span className="vendor-card__stars">★ {v.rating}</span>
           </Link>

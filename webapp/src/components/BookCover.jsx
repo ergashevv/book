@@ -1,10 +1,12 @@
+import { useState } from 'react';
 import { IconBookCover } from './Icons';
 
 /**
- * Kitob muqovasi: cover_url bo'lsa rasm, aks holda gradient + ikonka.
+ * Kitob muqovasi: cover_url bo'lsa rasm, xato bo'lsa yoki bo'lmasa gradient + ikonka.
  * size: 'sm' | 'md' | 'lg'
  */
 export default function BookCover({ coverUrl, size = 'md', alt = '', className = '' }) {
+  const [error, setError] = useState(false);
   const sizeMap = {
     sm: { width: 52, height: 70, icon: 24 },
     md: { width: 140, height: 'auto', aspectRatio: '2/3', icon: 40 },
@@ -17,7 +19,9 @@ export default function BookCover({ coverUrl, size = 'md', alt = '', className =
     ...(s.aspectRatio && { aspectRatio: s.aspectRatio }),
   };
 
-  if (coverUrl) {
+  const showImage = coverUrl && !error;
+
+  if (showImage) {
     return (
       <img
         src={coverUrl}
@@ -26,6 +30,7 @@ export default function BookCover({ coverUrl, size = 'md', alt = '', className =
         style={style}
         loading="lazy"
         decoding="async"
+        onError={() => setError(true)}
       />
     );
   }

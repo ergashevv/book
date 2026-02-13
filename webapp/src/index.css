@@ -21,6 +21,7 @@
   --transition-base: 0.2s ease;
   --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
 }
+html { scroll-behavior: smooth; }
 html, body, #root { height: 100%; margin: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
 body {
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
@@ -37,8 +38,22 @@ a:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: v
 button { cursor: pointer; font: inherit; }
 button:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
 
-/* Icons */
-.icons-svg { flex-shrink: 0; display: block; }
+/* Icons – har doim ko‘rinsin, rang meros qolsin */
+.icons-svg {
+  flex-shrink: 0;
+  display: block;
+  color: currentColor;
+  fill: none;
+  stroke: currentColor;
+  vertical-align: middle;
+}
+/* Icon o‘ralgan link/button rang berishi uchun */
+a .icons-svg, button .icons-svg { color: inherit; }
+.page-header__back .icons-svg, .page-header__icon .icons-svg,
+.layout__icon .icons-svg, .home-search-bar .icons-svg { color: var(--text); }
+.section-link .icons-svg { color: var(--accent); }
+.bottom-nav__item--active .icons-svg { color: var(--accent); }
+.bottom-nav__item:not(.bottom-nav__item--active) .icons-svg { color: var(--muted); }
 
 /* Book cover */
 .book-cover { border-radius: 6px; overflow: hidden; object-fit: cover; }
@@ -98,7 +113,12 @@ button:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radi
   background: var(--bg);
   animation: contentFadeIn 0.25s ease-out;
 }
-@keyframes contentFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes contentFadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+.animate-fade-in { animation: contentFadeIn 0.35s ease-out forwards; }
+.animate-fade-in-up { animation: fadeInUp 0.4s ease-out forwards; }
+.animate-scale-in { animation: scaleIn 0.3s ease-out forwards; }
 .card {
   background: var(--surface);
   border-radius: var(--radius);
@@ -106,10 +126,10 @@ button:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radi
   margin-bottom: 14px;
   border: 1px solid var(--border);
   box-shadow: var(--shadow-card);
-  transition: box-shadow 0.2s, transform 0.2s;
+  transition: box-shadow var(--transition-base), transform var(--transition-base), border-color var(--transition-base);
 }
-.card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-.card:active { transform: scale(0.99); }
+.card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); transform: translateY(-2px); }
+.card:active { transform: translateY(0) scale(0.99); }
 .card--static { cursor: default; }
 .card--static:hover { box-shadow: var(--shadow-card); transform: none; }
 .btn {
@@ -121,10 +141,10 @@ button:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radi
   border-radius: var(--radius-sm);
   font-weight: 600;
   font-size: 0.95rem;
-  transition: background 0.2s, transform 0.2s;
+  transition: background var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
 }
-.btn:hover { background: var(--accent-hover); }
-.btn:active { transform: scale(0.98); }
+.btn:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(234,88,12,0.3); }
+.btn:active { transform: translateY(0) scale(0.98); }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
 .btn-secondary:hover { background: var(--surface-hover); border-color: var(--muted); }
@@ -740,11 +760,12 @@ button:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radi
 .top-book-card__price { font-size: 0.9rem; font-weight: 600; color: var(--accent); margin-top: 4px; }
 .vendors-row { display: flex; gap: 10px; flex-wrap: wrap; }
 .vendor-chip { display: inline-flex; flex-direction: column; align-items: center; padding: 16px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); text-decoration: none; color: var(--text); font-size: 0.9rem; }
+.vendor-chip__logo { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-bottom: 6px; }
 .vendor-chip__name { font-weight: 600; }
 .vendor-chip__stars { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
 .authors-row { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; }
 .author-card { flex: 0 0 90px; display: flex; flex-direction: column; align-items: center; text-decoration: none; color: var(--text); }
-.author-card__avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--surface-hover); margin-bottom: 8px; }
+.author-card__avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--surface-hover); margin-bottom: 8px; background-size: cover; background-position: center; }
 .author-card__name { font-size: 0.8rem; font-weight: 600; text-align: center; }
 .author-card__role { font-size: 0.75rem; color: var(--muted); }
 
@@ -809,7 +830,7 @@ button:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radi
 /* Vendors grid, authors list */
 .vendors-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
 .vendor-card { display: flex; flex-direction: column; align-items: center; padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); text-decoration: none; color: var(--text); }
-.vendor-card__logo { width: 64px; height: 64px; border-radius: 12px; background: var(--surface-hover); margin-bottom: 8px; }
+.vendor-card__logo { width: 64px; height: 64px; border-radius: 12px; background: var(--surface-hover); margin-bottom: 8px; object-fit: cover; }
 .vendor-card__name { font-weight: 600; }
 .vendor-card__stars { font-size: 0.85rem; color: var(--muted); }
 .authors-list { display: flex; flex-direction: column; gap: 0; }

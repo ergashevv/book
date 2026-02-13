@@ -17,7 +17,7 @@ export default function Favorites() {
           <div key={item.id} className="favorite-item">
             <BookCover coverUrl={item.coverUrl} size="sm" alt="" />
             <div className="favorite-item__body">
-              <span className="favorite-item__title">In in amet ultrices sit.</span>
+              <span className="favorite-item__title">{item.title}</span>
               <span className="favorite-item__price">${item.price.toFixed(2)}</span>
             </div>
             <button type="button" className="favorite-item__heart" aria-label="Remove"><IconHeart style={{ width: 22, height: 22 }} /></button>

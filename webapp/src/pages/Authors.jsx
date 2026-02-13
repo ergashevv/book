@@ -28,7 +28,7 @@ export default function Authors() {
       <div className="authors-list">
         {MOCK_AUTHORS.map((a) => (
           <Link key={a.id} to={`/authors/${a.id}`} className="author-row">
-            <div className="author-row__avatar" />
+            <div className="author-row__avatar" style={a.image ? { backgroundImage: `url(${a.image})`, backgroundSize: 'cover' } : {}} />
             <div className="author-row__body">
               <span className="author-row__name">{a.name}</span>
               <span className="author-row__bio">{a.bio || a.role}</span>

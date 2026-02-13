@@ -1,24 +1,26 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
+import { useLang } from '../contexts/LangContext';
 import { IconBell } from '../components/Icons';
 import BookCover from '../components/BookCover';
 
 export default function Cart() {
-  const { items, totalItems, subtotal, shipping, total, updateQuantity, removeItem } = useCart();
+  const { t } = useLang();
+  const { items, totalItems, subtotal, shipping, total, updateQuantity } = useCart();
 
   if (items.length === 0) {
     return (
       <div className="content">
         <header className="page-header">
-          <h1 className="page-header__title">My Cart</h1>
+          <h1 className="page-header__title">{t('cart.title')}</h1>
           <Link to="/notifications" className="page-header__icon" aria-label="Notifications">
             <IconBell style={{ width: 22, height: 22 }} />
           </Link>
         </header>
-        <div className="empty-state">
+        <div className="empty-state animate-fade-in">
           <div className="empty-state__icon empty-state__icon--cart" aria-hidden />
-          <p className="empty-state__text">There is no products</p>
-          <Link to="/books" className="btn btn-secondary">Continue shopping</Link>
+          <p className="empty-state__text">{t('cart.empty')}</p>
+          <Link to="/books" className="btn btn-secondary">{t('cart.continueShopping')}</Link>
         </div>
       </div>
     );
@@ -27,7 +29,7 @@ export default function Cart() {
   return (
     <div className="content">
       <header className="page-header">
-        <h1 className="page-header__title">My Cart</h1>
+        <h1 className="page-header__title">{t('cart.title')}</h1>
         <Link to="/notifications" className="page-header__icon" aria-label="Notifications">
           <IconBell style={{ width: 22, height: 22 }} />
         </Link>

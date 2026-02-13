@@ -1,20 +1,22 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useLang } from '../contexts/LangContext';
 import { IconSearch, IconBell } from '../components/Icons';
 import { MOCK_BOOKS, CATEGORIES } from '../mock';
 import BookCover from '../components/BookCover';
 
 export default function Category() {
+  const { t } = useLang();
   const [filter, setFilter] = useState('All');
   const books = filter === 'All' ? MOCK_BOOKS : MOCK_BOOKS.filter((b) => b.category === filter);
 
   return (
     <div className="content">
       <header className="category-header">
-        <Link to="/search" className="category-header__icon" aria-label="Search">
+        <Link to="/search" className="category-header__icon" aria-label={t('home.search')}>
           <IconSearch style={{ width: 22, height: 22 }} />
         </Link>
-        <h1 className="category-header__title">Category</h1>
+        <h1 className="category-header__title">{t('category.title')}</h1>
         <Link to="/notifications" className="category-header__icon" aria-label="Notifications">
           <IconBell style={{ width: 22, height: 22 }} />
         </Link>
@@ -33,8 +35,8 @@ export default function Category() {
       </div>
       <div className="category-grid">
         {books.map((book) => (
-          <Link key={book.id} to={`/books/${book.id}/detail`} className="category-book">
-            <BookCover coverUrl={book.coverUrl} size="md" alt="" />
+          <Link key={book.id} to={`/books/${book.id}/detail`} className="category-book animate-fade-in-up">
+            <BookCover coverUrl={book.coverUrl} size="md" alt={book.title} />
             <span className="category-book__title">{book.title}</span>
             <span className="category-book__price">${book.price.toFixed(2)}</span>
           </Link>
