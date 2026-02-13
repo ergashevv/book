@@ -1,11 +1,10 @@
 import { Router } from 'express';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import fs from 'fs';
 import db from '../db.js';
 import { validateTelegramWebAppData } from '../auth.js';
+import { fileRoot } from '../paths.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const router = Router();
 
 function authMiddleware(req, res, next) {
@@ -51,8 +50,7 @@ router.get('/books/:id', authMiddleware, (req, res) => {
 router.get('/books/:id/file', authMiddleware, (req, res) => {
   const row = db.prepare('SELECT file_path, file_name FROM books WHERE id = ?').get(req.params.id);
   if (!row) return res.status(404).json({ error: 'Book not found' });
-  const root = path.join(__dirname, '..', '..');
-  const fullPath = path.join(root, row.file_path);
+  const fullPath = path.join(fileRoot, row.file_path);
   if (!fs.existsSync(fullPath)) return res.status(404).json({ error: 'File not found' });
   res.sendFile(fullPath, { headers: { 'Content-Type': 'application/pdf' } });
 });

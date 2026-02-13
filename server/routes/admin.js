@@ -1,15 +1,10 @@
 import { Router } from 'express';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import fs from 'fs';
 import multer from 'multer';
 import db from '../db.js';
 import { validateAdminPassword } from '../auth.js';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
-
-if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+import { uploadsDir, fileRoot } from '../paths.js';
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadsDir),
@@ -100,7 +95,7 @@ router.delete('/books/:id', adminAuth, (req, res) => {
   if (!row) return res.status(404).json({ error: 'Book not found' });
   db.prepare('DELETE FROM books WHERE id = ?').run(req.params.id);
   db.prepare('DELETE FROM reading_progress WHERE book_id = ?').run(req.params.id);
-  const fullPath = path.join(__dirname, '..', '..', row.file_path);
+  const fullPath = path.join(fileRoot, row.file_path);
   if (fs.existsSync(fullPath)) fs.unlinkSync(fullPath);
   res.json({ ok: true });
 });
