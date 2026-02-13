@@ -4,7 +4,7 @@ import { IconArrowLeft } from '../components/Icons';
 import { useTelegram } from '../useTelegram';
 import { useLang } from '../contexts/LangContext';
 import { fetchBooks } from '../api/content';
-import { searchGoogleBooks } from '../api/googleBooks';
+import { searchAllSources } from '../api/bookSearchAll';
 import BookCover from '../components/BookCover';
 
 const RECENT_KEY = 'search_recent';
@@ -27,6 +27,34 @@ function addRecent(query) {
 
 const DEBOUNCE_MS = 400;
 
+function SearchSection({ title, loading, items, emptyMsg, t, linkTo, sourceLabel, externalLink }) {
+  if (loading) return (<section className="search-results-section"><h3 className="section-title">{title}</h3><div className="skeleton-card" style={{ minHeight: 80 }} /></section>);
+  if (!items?.length) return (<section className="search-results-section"><h3 className="section-title">{title}</h3><p className="muted">{emptyMsg}</p></section>);
+  const to = linkTo;
+  return (
+    <section className="search-results-section">
+      <h3 className="section-title">{title}</h3>
+      <div className="book-list book-list--search">
+        {items.map((book) => {
+          const href = to(book);
+          const content = (
+            <>
+              <BookCover coverUrl={book.coverUrl ?? book.cover_url} size="sm" alt={book.title} />
+              <div className="book-card__body">
+                <span className="book-card__title">{book.title}</span>
+                {book.author && <span className="book-card__author">{book.author}</span>}
+                <span className="book-card__meta book-card__meta--source">{sourceLabel}</span>
+              </div>
+            </>
+          );
+          if (externalLink && href) return (<a key={book.id} href={href} target="_blank" rel="noopener noreferrer" className="book-card">{content}</a>);
+          return (<Link key={book.id} to={href} className="book-card">{content}</Link>);
+        })}
+      </div>
+    </section>
+  );
+}
+
 export default function Search() {
   const navigate = useNavigate();
   const { t } = useLang();
@@ -35,8 +63,17 @@ export default function Search() {
   const [recent, setRecent] = useState(getRecent());
   const [allBooks, setAllBooks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [googleResults, setGoogleResults] = useState([]);
-  const [googleLoading, setGoogleLoading] = useState(false);
+  const [externalLoading, setExternalLoading] = useState(false);
+  const [external, setExternal] = useState({
+    google: [],
+    openLibrary: [],
+    itBookstore: [],
+    isbndb: [],
+    hardcover: [],
+    gutendex: [],
+    isbndbHasKey: false,
+    hardcoverHasKey: false,
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -47,16 +84,16 @@ export default function Search() {
   useEffect(() => {
     const term = q.trim();
     if (!term || term.length < 2) {
-      setGoogleResults([]);
-      setGoogleLoading(false);
+      setExternal((prev) => ({ ...prev, google: [], openLibrary: [], itBookstore: [], isbndb: [], hardcover: [], gutendex: [] }));
+      setExternalLoading(false);
       return;
     }
-    setGoogleLoading(true);
+    setExternalLoading(true);
     const tId = setTimeout(() => {
-      searchGoogleBooks(term, { maxResults: 15 })
-        .then(({ items }) => { setGoogleResults(items || []); })
-        .catch(() => { setGoogleResults([]); })
-        .finally(() => { setGoogleLoading(false); });
+      searchAllSources(term)
+        .then((data) => { setExternal(data); })
+        .catch(() => { setExternal({ google: [], openLibrary: [], itBookstore: [], isbndb: [], hardcover: [], gutendex: [], isbndbHasKey: false, hardcoverHasKey: false }); })
+        .finally(() => { setExternalLoading(false); });
     }, DEBOUNCE_MS);
     return () => clearTimeout(tId);
   }, [q]);
@@ -127,32 +164,24 @@ export default function Search() {
                   </div>
                 </section>
               )}
-              {results.length === 0 && !googleLoading && googleResults.length === 0 && (
+              {results.length === 0 && !externalLoading && [external.google, external.openLibrary, external.itBookstore, external.isbndb, external.hardcover, external.gutendex].every((arr) => !arr?.length) && (
                 <p className="muted">{t('books.noResults')} &quot;{q}&quot;</p>
               )}
 
               {/* Google Books */}
-              <section className="search-results-section search-results-section--google">
-                <h3 className="section-title">{t('books.googleBooks')}</h3>
-                {googleLoading ? (
-                  <div className="skeleton-card" style={{ minHeight: 80 }} />
-                ) : googleResults.length === 0 ? (
-                  <p className="muted">{t('books.noResultsGoogle')}</p>
-                ) : (
-                  <div className="book-list book-list--search">
-                    {googleResults.map((book) => (
-                      <Link key={book.id} to={`/books/google/${book.volumeId}/detail`} className="book-card">
-                        <BookCover coverUrl={book.coverUrl ?? book.cover_url} size="sm" alt={book.title} />
-                        <div className="book-card__body">
-                          <span className="book-card__title">{book.title}</span>
-                          {book.author && <span className="book-card__author">{book.author}</span>}
-                          <span className="book-card__meta book-card__meta--source">{t('books.googleResults')}</span>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </section>
+              <SearchSection title={t('books.googleBooks')} loading={externalLoading} items={external.google} emptyMsg={t('books.noResultsGoogle')} t={t} linkTo={(book) => `/books/external/google/${book.volumeId}/detail`} sourceLabel={t('books.googleResults')} />
+              {/* Open Library */}
+              <SearchSection title={t('books.openLibrary')} loading={externalLoading} items={external.openLibrary} emptyMsg={t('books.noResultsOpenLibrary')} t={t} linkTo={(book) => `/books/external/openlibrary/${book.workKey}/detail`} sourceLabel={t('books.openLibraryResults')} />
+              {/* IT Bookstore */}
+              <SearchSection title={t('books.itBookstore')} loading={externalLoading} items={external.itBookstore} emptyMsg={t('books.noResultsItBookstore')} t={t} linkTo={(book) => `/books/external/itbookstore/${encodeURIComponent(book.isbn13)}/detail`} sourceLabel={t('books.itBookstoreResults')} />
+              {/* ISBNdb */}
+              {external.isbndbHasKey && <SearchSection title={t('books.isbndb')} loading={externalLoading} items={external.isbndb} emptyMsg={t('books.noResultsIsbndb')} t={t} linkTo={(book) => book.infoLink} externalLink sourceLabel={t('books.isbndbResults')} />}
+              {!external.isbndbHasKey && q.trim().length >= 2 && <section className="search-results-section"><h3 className="section-title">{t('books.isbndb')}</h3><p className="muted">{t('books.isbndbNeedKey')}</p></section>}
+              {/* Hardcover */}
+              {external.hardcoverHasKey && <SearchSection title={t('books.hardcover')} loading={externalLoading} items={external.hardcover} emptyMsg={t('books.noResultsHardcover')} t={t} linkTo={(book) => book.infoLink} externalLink sourceLabel={t('books.hardcoverResults')} />}
+              {!external.hardcoverHasKey && q.trim().length >= 2 && <section className="search-results-section"><h3 className="section-title">{t('books.hardcover')}</h3><p className="muted">{t('books.hardcoverNeedKey')}</p></section>}
+              {/* Gutendex */}
+              <SearchSection title={t('books.gutendex')} loading={externalLoading} items={external.gutendex} emptyMsg={t('books.noResultsGutendex')} t={t} linkTo={(book) => `/books/external/gutendex/${book.gutenbergId}/detail`} sourceLabel={t('books.gutendexResults')} />
             </>
           )}
         </div>
