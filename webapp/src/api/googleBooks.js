@@ -42,7 +42,8 @@ function normalizeVolume(item) {
 /**
  * Google Books orqali kitoblar qidirish.
  * @param {string} q - Qidiruv so'zi (sarlavha, muallif, ISBN va hokazo)
- * @param {{ maxResults?: number, startIndex?: number, langRestrict?: string, printType?: string }} options
+ * @param {{ maxResults?: number, startIndex?: number, langRestrict?: string, printType?: string, filter?: string }} options
+ *   filter: 'free-ebooks' faqat bepul kitoblar uchun
  */
 export async function searchGoogleBooks(q, options = {}) {
   const {
@@ -50,6 +51,7 @@ export async function searchGoogleBooks(q, options = {}) {
     startIndex = 0,
     langRestrict,
     printType = 'books',
+    filter,
   } = options;
 
   if (!q || !String(q).trim()) return { items: [], totalItems: 0 };
@@ -61,6 +63,7 @@ export async function searchGoogleBooks(q, options = {}) {
     printType,
   });
   if (langRestrict) params.set('langRestrict', langRestrict);
+  if (filter) params.set('filter', filter);
 
   const url = `${BASE}/volumes?${params.toString()}`;
   const res = await fetch(url);

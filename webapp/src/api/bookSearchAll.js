@@ -1,5 +1,5 @@
 /**
- * Barcha tashqi kitob API'laridan parallel qidiruv.
+ * Tashqi kitob API'lari: barcha manbalar yoki faqat bepul.
  * Kutubxona (lokal) Search.jsx da alohida.
  */
 
@@ -10,10 +10,31 @@ import { searchIsbndb, isbndbHasKey } from './isbndb';
 import { searchHardcover, hardcoverHasKey } from './hardcover';
 import { searchGutendex } from './gutendex';
 
+const emptyFree = { google: [], openLibrary: [], gutendex: [] };
+
 /**
- * Bitta qidiruv so'zi uchun barcha manbalardan parallel so'rov.
- * @param {string} q - Qidiruv so'zi
- * @returns {Promise<{ google: [], openLibrary: [], itBookstore: [], isbndb: [], hardcover: [], gutendex: [], isbndbHasKey: boolean, hardcoverHasKey: boolean }>}
+ * Faqat bepul manbalardan qidiruv (barcha natijalar ilova ichida ochiladi).
+ * Google (free-ebooks), Open Library, Gutendex.
+ */
+export async function searchFreeSources(q) {
+  const term = String(q || '').trim();
+  if (!term) return emptyFree;
+
+  const [googleRes, openLibraryRes, gutendexRes] = await Promise.allSettled([
+    searchGoogleBooks(term, { maxResults: 15, filter: 'free-ebooks' }),
+    searchOpenLibrary(term, { limit: 15 }),
+    searchGutendex(term, { page: 1 }),
+  ]);
+
+  return {
+    google: googleRes.status === 'fulfilled' ? (googleRes.value?.items || []) : [],
+    openLibrary: openLibraryRes.status === 'fulfilled' ? (openLibraryRes.value?.items || []) : [],
+    gutendex: gutendexRes.status === 'fulfilled' ? (gutendexRes.value?.items || []) : [],
+  };
+}
+
+/**
+ * Barcha manbalardan qidiruv (pullik manbalar ham).
  */
 export async function searchAllSources(q) {
   const term = String(q || '').trim();

@@ -4,8 +4,30 @@ import { useLang } from '../contexts/LangContext';
 import { useTelegram } from '../useTelegram';
 import { useReading } from '../contexts/ReadingContext';
 import { fetchBooks, fetchVendors, fetchAuthors, fetchBanner } from '../api/content';
+import { fetchExploreFree } from '../api/exploreFree';
 import { IconSearch, IconChevronRight } from '../components/Icons';
 import BookCover from '../components/BookCover';
+
+function ExploreRow({ title, items, linkTo, t }) {
+  if (!items?.length) return null;
+  return (
+    <section className="home-section">
+      <div className="section-head">
+        <h2 className="section-title">{title}</h2>
+        <span className="section-badge">{t('books.freeBooks')}</span>
+      </div>
+      <div className="top-books-row top-books-row--scroll">
+        {items.map((book) => (
+          <Link key={book.id} to={linkTo(book)} className="top-book-card">
+            <BookCover coverUrl={book.coverUrl ?? book.cover_url} size="md" alt={book.title} />
+            <span className="top-book-card__title">{book.title}</span>
+            {book.author && <span className="top-book-card__author">{book.author}</span>}
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 export default function HomeNew() {
   const { t } = useLang();
@@ -17,6 +39,7 @@ export default function HomeNew() {
   const [authors, setAuthors] = useState([]);
   const [bannerImage, setBannerImage] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [explore, setExplore] = useState({ gutendex: [], openLibrary: [], google: [] });
 
   useEffect(() => {
     let cancelled = false;
@@ -47,6 +70,14 @@ export default function HomeNew() {
       });
     return () => { cancelled = true; };
   }, [initData]);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchExploreFree()
+      .then((data) => { if (!cancelled) setExplore(data); })
+      .catch(() => { if (!cancelled) setExplore({ gutendex: [], openLibrary: [], google: [] }); });
+    return () => { cancelled = true; };
+  }, []);
 
   const firstContinue = continueReading[0];
 
@@ -98,7 +129,7 @@ export default function HomeNew() {
         </section>
       )}
 
-      {/* Kindle: Recommended for you */}
+      {/* Kutubxonadan tavsiya */}
       <section className="home-section">
         <div className="section-head">
           <h2 className="section-title">{t('home.recommended')}</h2>
@@ -119,7 +150,14 @@ export default function HomeNew() {
         </div>
       </section>
 
-      {/* Kindle: Categories / Browse – minimal */}
+      {/* Bepul – Gutenberg */}
+      <ExploreRow title={t('books.exploreGutenberg')} items={explore.gutendex} t={t} linkTo={(book) => `/books/external/gutendex/${book.gutenbergId}/detail`} />
+      {/* Bepul – Open Library */}
+      <ExploreRow title={t('books.exploreOpenLibrary')} items={explore.openLibrary} t={t} linkTo={(book) => `/books/external/openlibrary/${book.workKey}/detail`} />
+      {/* Bepul – Google */}
+      <ExploreRow title={t('books.exploreGoogleFree')} items={explore.google} t={t} linkTo={(book) => `/books/external/google/${book.volumeId}/detail`} />
+
+      {/* Categories / Browse */}
       <section className="home-section">
         <div className="section-head">
           <h2 className="section-title">{t('home.browseCategories')}</h2>

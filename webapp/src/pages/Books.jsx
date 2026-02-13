@@ -1,6 +1,7 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import { useEffect, useState, useMemo } from 'react';
 import { apiGet, getBookCoverUrl } from '../api';
+import { fetchExploreFree } from '../api/exploreFree';
 import { useLang } from '../contexts/LangContext';
 import { useReading } from '../contexts/ReadingContext';
 import BookCover from '../components/BookCover';
@@ -35,6 +36,13 @@ export default function Books({ initData }) {
   const [viewMode, setViewMode] = useState(() => (typeof localStorage !== 'undefined' ? localStorage.getItem('libraryView') || 'grid' : 'grid'));
   const [sortBy, setSortBy] = useState('recent');
   const [filterBy, setFilterBy] = useState('all');
+  const [exploreFree, setExploreFree] = useState({ gutendex: [], openLibrary: [], google: [] });
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchExploreFree().then((data) => { if (!cancelled) setExploreFree(data); }).catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     apiGet('/categories', initData)
@@ -181,6 +189,35 @@ export default function Books({ initData }) {
             </button>
           ))}
         </div>
+      )}
+
+      {(exploreFree.gutendex?.length > 0 || exploreFree.openLibrary?.length > 0 || exploreFree.google?.length > 0) && (
+        <section className="home-section books-explore-free">
+          <h2 className="section-title">{t('books.exploreFree')} · {t('books.freeBooks')}</h2>
+          <div className="top-books-row top-books-row--scroll">
+            {exploreFree.gutendex.slice(0, 6).map((book) => (
+              <Link key={book.id} to={`/books/external/gutendex/${book.gutenbergId}/detail`} className="top-book-card">
+                <BookCover coverUrl={book.coverUrl ?? book.cover_url} size="md" alt={book.title} />
+                <span className="top-book-card__title">{book.title}</span>
+                {book.author && <span className="top-book-card__author">{book.author}</span>}
+              </Link>
+            ))}
+            {exploreFree.openLibrary.slice(0, 6).map((book) => (
+              <Link key={book.id} to={`/books/external/openlibrary/${book.workKey}/detail`} className="top-book-card">
+                <BookCover coverUrl={book.coverUrl ?? book.cover_url} size="md" alt={book.title} />
+                <span className="top-book-card__title">{book.title}</span>
+                {book.author && <span className="top-book-card__author">{book.author}</span>}
+              </Link>
+            ))}
+            {exploreFree.google.slice(0, 6).map((book) => (
+              <Link key={book.id} to={`/books/external/google/${book.volumeId}/detail`} className="top-book-card">
+                <BookCover coverUrl={book.coverUrl ?? book.cover_url} size="md" alt={book.title} />
+                <span className="top-book-card__title">{book.title}</span>
+                {book.author && <span className="top-book-card__author">{book.author}</span>}
+              </Link>
+            ))}
+          </div>
+        </section>
       )}
 
       {loading && <SkeletonBookList count={5} />}

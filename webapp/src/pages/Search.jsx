@@ -4,7 +4,7 @@ import { IconArrowLeft } from '../components/Icons';
 import { useTelegram } from '../useTelegram';
 import { useLang } from '../contexts/LangContext';
 import { fetchBooks } from '../api/content';
-import { searchAllSources } from '../api/bookSearchAll';
+import { searchFreeSources } from '../api/bookSearchAll';
 import BookCover from '../components/BookCover';
 
 const RECENT_KEY = 'search_recent';
@@ -64,16 +64,7 @@ export default function Search() {
   const [allBooks, setAllBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [externalLoading, setExternalLoading] = useState(false);
-  const [external, setExternal] = useState({
-    google: [],
-    openLibrary: [],
-    itBookstore: [],
-    isbndb: [],
-    hardcover: [],
-    gutendex: [],
-    isbndbHasKey: false,
-    hardcoverHasKey: false,
-  });
+  const [external, setExternal] = useState({ google: [], openLibrary: [], gutendex: [] });
 
   useEffect(() => {
     let cancelled = false;
@@ -84,15 +75,15 @@ export default function Search() {
   useEffect(() => {
     const term = q.trim();
     if (!term || term.length < 2) {
-      setExternal((prev) => ({ ...prev, google: [], openLibrary: [], itBookstore: [], isbndb: [], hardcover: [], gutendex: [] }));
+      setExternal({ google: [], openLibrary: [], gutendex: [] });
       setExternalLoading(false);
       return;
     }
     setExternalLoading(true);
     const tId = setTimeout(() => {
-      searchAllSources(term)
+      searchFreeSources(term)
         .then((data) => { setExternal(data); })
-        .catch(() => { setExternal({ google: [], openLibrary: [], itBookstore: [], isbndb: [], hardcover: [], gutendex: [], isbndbHasKey: false, hardcoverHasKey: false }); })
+        .catch(() => { setExternal({ google: [], openLibrary: [], gutendex: [] }); })
         .finally(() => { setExternalLoading(false); });
     }, DEBOUNCE_MS);
     return () => clearTimeout(tId);
@@ -164,24 +155,14 @@ export default function Search() {
                   </div>
                 </section>
               )}
-              {results.length === 0 && !externalLoading && [external.google, external.openLibrary, external.itBookstore, external.isbndb, external.hardcover, external.gutendex].every((arr) => !arr?.length) && (
+              {results.length === 0 && !externalLoading && [external.google, external.openLibrary, external.gutendex].every((arr) => !arr?.length) && (
                 <p className="muted">{t('books.noResults')} &quot;{q}&quot;</p>
               )}
 
-              {/* Google Books */}
-              <SearchSection title={t('books.googleBooks')} loading={externalLoading} items={external.google} emptyMsg={t('books.noResultsGoogle')} t={t} linkTo={(book) => `/books/external/google/${book.volumeId}/detail`} sourceLabel={t('books.googleResults')} />
-              {/* Open Library */}
-              <SearchSection title={t('books.openLibrary')} loading={externalLoading} items={external.openLibrary} emptyMsg={t('books.noResultsOpenLibrary')} t={t} linkTo={(book) => `/books/external/openlibrary/${book.workKey}/detail`} sourceLabel={t('books.openLibraryResults')} />
-              {/* IT Bookstore */}
-              <SearchSection title={t('books.itBookstore')} loading={externalLoading} items={external.itBookstore} emptyMsg={t('books.noResultsItBookstore')} t={t} linkTo={(book) => `/books/external/itbookstore/${encodeURIComponent(book.isbn13)}/detail`} sourceLabel={t('books.itBookstoreResults')} />
-              {/* ISBNdb */}
-              {external.isbndbHasKey && <SearchSection title={t('books.isbndb')} loading={externalLoading} items={external.isbndb} emptyMsg={t('books.noResultsIsbndb')} t={t} linkTo={(book) => book.infoLink} externalLink sourceLabel={t('books.isbndbResults')} />}
-              {!external.isbndbHasKey && q.trim().length >= 2 && <section className="search-results-section"><h3 className="section-title">{t('books.isbndb')}</h3><p className="muted">{t('books.isbndbNeedKey')}</p></section>}
-              {/* Hardcover */}
-              {external.hardcoverHasKey && <SearchSection title={t('books.hardcover')} loading={externalLoading} items={external.hardcover} emptyMsg={t('books.noResultsHardcover')} t={t} linkTo={(book) => book.infoLink} externalLink sourceLabel={t('books.hardcoverResults')} />}
-              {!external.hardcoverHasKey && q.trim().length >= 2 && <section className="search-results-section"><h3 className="section-title">{t('books.hardcover')}</h3><p className="muted">{t('books.hardcoverNeedKey')}</p></section>}
-              {/* Gutendex */}
-              <SearchSection title={t('books.gutendex')} loading={externalLoading} items={external.gutendex} emptyMsg={t('books.noResultsGutendex')} t={t} linkTo={(book) => `/books/external/gutendex/${book.gutenbergId}/detail`} sourceLabel={t('books.gutendexResults')} />
+              {/* Faqat bepul – barchasi ilova ichida */}
+              <SearchSection title={t('books.googleBooks')} loading={externalLoading} items={external.google} emptyMsg={t('books.noResultsGoogle')} t={t} linkTo={(book) => `/books/external/google/${book.volumeId}/detail`} sourceLabel={t('books.freeBooks')} />
+              <SearchSection title={t('books.openLibrary')} loading={externalLoading} items={external.openLibrary} emptyMsg={t('books.noResultsOpenLibrary')} t={t} linkTo={(book) => `/books/external/openlibrary/${book.workKey}/detail`} sourceLabel={t('books.freeBooks')} />
+              <SearchSection title={t('books.gutendex')} loading={externalLoading} items={external.gutendex} emptyMsg={t('books.noResultsGutendex')} t={t} linkTo={(book) => `/books/external/gutendex/${book.gutenbergId}/detail`} sourceLabel={t('books.freeBooks')} />
             </>
           )}
         </div>
