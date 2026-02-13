@@ -55,6 +55,11 @@ export default function Reader({ initData }) {
   }, [bookId, initData]);
 
   useEffect(() => {
+    if (book) document.title = `${book.title} · Kitobxona`;
+    return () => { document.title = 'Kitobxona'; };
+  }, [book]);
+
+  useEffect(() => {
     if (!bookId || !book) return;
     setLoading(true);
     fetchBookFile(bookId, initData)

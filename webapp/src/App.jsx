@@ -2,6 +2,7 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useTelegram } from './useTelegram';
 import { useLang } from './contexts/LangContext';
 import Layout from './components/Layout';
+import Spinner from './components/Spinner';
 import Home from './pages/Home';
 import Books from './pages/Books';
 import BookDetail from './pages/BookDetail';
@@ -14,9 +15,10 @@ export default function App() {
 
   if (!ready) {
     return (
-      <div className="app">
-        <div className="content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 200 }}>
-          {t('app.loading')}
+      <div className="app app--loading">
+        <div className="content content--center">
+          <Spinner size="lg" />
+          <p className="loading-text">{t('app.loading')}</p>
         </div>
       </div>
     );

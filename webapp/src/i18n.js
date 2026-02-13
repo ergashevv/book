@@ -8,6 +8,7 @@ export const LANGUAGES = [
 const translations = {
   uz: {
     app: { loading: 'Yuklanmoqda...', telegramOnly: 'Bu ilova faqat Telegram orqali ishlatiladi. Bot orqali kirishingiz kerak.' },
+    layout: { appName: 'Bosh sahifa' },
     nav: { home: 'Bosh sahifa', books: 'Kitoblar', profile: 'Profil', aria: 'Asosiy menyu' },
     home: {
       heroTitle: 'Yangi kitoblarni kashf eting',
@@ -50,8 +51,9 @@ const translations = {
       read: 'O‘qish',
       pages: 'sahifa',
       back: 'Orqaga',
+      pageTitle: 'Kitob',
     },
-    reader: {
+    reader: { pageTitle: 'O‘qish',
       exit: '← Chiqish',
       back: '← Orqaga',
       zoomOut: 'Kichiklashtirish',
@@ -69,6 +71,7 @@ const translations = {
   },
   ru: {
     app: { loading: 'Загрузка...', telegramOnly: 'Это приложение работает только через Telegram. Войдите через бота.' },
+    layout: { appName: 'Главная' },
     nav: { home: 'Главная', books: 'Книги', profile: 'Профиль', aria: 'Главное меню' },
     home: {
       heroTitle: 'Откройте новые книги',
@@ -111,8 +114,9 @@ const translations = {
       read: 'Читать',
       pages: 'стр.',
       back: 'Назад',
+      pageTitle: 'Книга',
     },
-    reader: {
+    reader: { pageTitle: 'Чтение',
       exit: '← Выход',
       back: '← Назад',
       zoomOut: 'Уменьшить',
@@ -130,6 +134,7 @@ const translations = {
   },
   en: {
     app: { loading: 'Loading...', telegramOnly: 'This app only works via Telegram. Please open it from the bot.' },
+    layout: { appName: 'Home' },
     nav: { home: 'Home', books: 'Books', profile: 'Profile', aria: 'Main menu' },
     home: {
       heroTitle: 'Explore new books',
@@ -172,8 +177,9 @@ const translations = {
       read: 'Read',
       pages: 'p.',
       back: 'Back',
+      pageTitle: 'Book',
     },
-    reader: {
+    reader: { pageTitle: 'Reader',
       exit: '← Exit',
       back: '← Back',
       zoomOut: 'Zoom out',

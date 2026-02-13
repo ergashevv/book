@@ -2,6 +2,10 @@ import { useParams, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { apiGet } from '../api';
 import { useLang } from '../contexts/LangContext';
+import BookCover from '../components/BookCover';
+import { IconArrowLeft } from '../components/Icons';
+import Spinner from '../components/Spinner';
+import { SkeletonBookDetail } from '../components/Skeleton';
 
 export default function BookDetail({ initData }) {
   const { bookId } = useParams();
@@ -21,7 +25,7 @@ export default function BookDetail({ initData }) {
   if (loading) {
     return (
       <div className="content">
-        <p className="muted">{t('books.loading')}</p>
+        <SkeletonBookDetail />
       </div>
     );
   }
@@ -29,9 +33,13 @@ export default function BookDetail({ initData }) {
   if (error || !book) {
     return (
       <div className="content">
-        <Link to="/books" className="back-link">← {t('bookDetail.back')}</Link>
-        <div className="card">
+        <Link to="/books" className="back-link">
+          <IconArrowLeft style={{ width: 18, height: 18, verticalAlign: 'middle', marginRight: 4 }} />
+          {t('bookDetail.back')}
+        </Link>
+        <div className="card card--static error-card">
           <p className="home-error">{error || 'Book not found'}</p>
+          <Link to="/books" className="btn btn-secondary" style={{ marginTop: 12 }}>{t('bookDetail.back')}</Link>
         </div>
       </div>
     );
@@ -39,9 +47,12 @@ export default function BookDetail({ initData }) {
 
   return (
     <div className="content">
-      <Link to="/books" className="back-link">← {t('bookDetail.back')}</Link>
+      <Link to="/books" className="back-link">
+        <IconArrowLeft style={{ width: 18, height: 18, verticalAlign: 'middle', marginRight: 4 }} />
+        {t('bookDetail.back')}
+      </Link>
       <div className="book-detail">
-        <div className="book-detail__cover">📕</div>
+        <BookCover coverUrl={book.cover_url} size="lg" alt={book.title} className="book-detail__cover" />
         <h1 className="book-detail__title">{book.title}</h1>
         {book.author && <p className="book-detail__author">{book.author}</p>}
         {book.page_count > 0 && (

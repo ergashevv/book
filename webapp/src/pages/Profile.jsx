@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useLang } from '../contexts/LangContext';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import { IconUser } from '../components/Icons';
 
 export default function Profile({ user, isDev }) {
   const { t } = useLang();
@@ -10,7 +11,9 @@ export default function Profile({ user, isDev }) {
         <h2 className="profile-card__title">{t('profile.title')}</h2>
         {user && (
           <div className="profile-card__user">
-            <div className="profile-card__avatar" aria-hidden>👤</div>
+            <div className="profile-card__avatar" aria-hidden>
+              <IconUser style={{ width: 26, height: 26 }} />
+            </div>
             <div>
               <p className="profile-card__name">
                 {user.first_name} {user.last_name || ''}
@@ -38,11 +41,9 @@ export default function Profile({ user, isDev }) {
       </section>
 
       <div className="card card--static">
-        <h3 style={{ marginTop: 0, fontSize: '1rem', fontWeight: 600 }}>{t('profile.app')}</h3>
-        <p style={{ margin: 0, color: 'var(--muted)', fontSize: '0.9rem' }}>
-          {t('profile.appDesc')}
-        </p>
-        <Link to="/" className="btn btn-secondary" style={{ display: 'inline-block', marginTop: 16 }}>
+        <h3 className="card__heading">{t('profile.app')}</h3>
+        <p className="card__desc">{t('profile.appDesc')}</p>
+        <Link to="/" className="btn btn-secondary profile-to-home">
           {t('profile.toHome')}
         </Link>
       </div>

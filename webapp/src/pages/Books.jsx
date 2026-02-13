@@ -2,6 +2,11 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useEffect, useState, useMemo } from 'react';
 import { apiGet } from '../api';
 import { useLang } from '../contexts/LangContext';
+import BookCover from '../components/BookCover';
+import { IconSearch } from '../components/Icons';
+import { SkeletonBookList } from '../components/Skeleton';
+import EmptyState from '../components/EmptyState';
+import { IconChevronRight } from '../components/Icons';
 
 export default function Books({ initData }) {
   const { t } = useLang();
@@ -45,7 +50,9 @@ export default function Books({ initData }) {
   return (
     <div className="content">
       <div className="books-search-wrap">
-        <span className="books-search-icon" aria-hidden>🔍</span>
+        <span className="books-search-icon" aria-hidden>
+          <IconSearch style={{ width: 20, height: 20 }} />
+        </span>
         <input
           type="search"
           className="books-search-input"
@@ -78,20 +85,24 @@ export default function Books({ initData }) {
         </div>
       )}
 
-      {loading && <p className="muted">{t('books.loading')}</p>}
+      {loading && <SkeletonBookList count={5} />}
       {error && <p className="home-error">{t('books.error')}: {error}</p>}
       {!loading && !error && filteredBooks.length === 0 && (
-        <div className="empty-state">
-          <p className="empty-state__text">
-            {searchQuery.trim() ? t('books.noResults') : t('books.noBooks')}
-          </p>
-        </div>
+        <EmptyState
+          message={searchQuery.trim() ? t('books.noResults') : t('books.noBooks')}
+        >
+          {searchQuery.trim() && (
+            <button type="button" className="btn btn-secondary" onClick={() => setSearchQuery('')}>
+              {t('books.all')}
+            </button>
+          )}
+        </EmptyState>
       )}
       {!loading && !error && filteredBooks.length > 0 && (
         <div className="book-list">
           {filteredBooks.map((book) => (
             <Link key={book.id} to={`/books/${book.id}/detail`} className="book-card">
-              <div className="book-card__cover">📕</div>
+              <BookCover coverUrl={book.cover_url} size="sm" alt={book.title} />
               <div className="book-card__body">
                 <h3 className="book-card__title">{book.title}</h3>
                 {book.author && <p className="book-card__author">{book.author}</p>}
@@ -101,6 +112,9 @@ export default function Books({ initData }) {
                   {book.category_name}
                 </p>
               </div>
+              <span className="book-card__chevron" aria-hidden>
+                <IconChevronRight style={{ width: 20, height: 20 }} />
+              </span>
             </Link>
           ))}
         </div>
