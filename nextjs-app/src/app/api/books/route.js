@@ -14,12 +14,20 @@ export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const category_id = searchParams.get('category_id');
 
-  let sql = 'SELECT b.*, c.name_uz as category_name FROM books b JOIN categories c ON b.category_id = c.id ORDER BY b.created_at DESC';
-  const params = [];
+  let rows;
   if (category_id) {
-    sql = 'SELECT b.*, c.name_uz as category_name FROM books b JOIN categories c ON b.category_id = c.id WHERE b.category_id = ? ORDER BY b.created_at DESC';
-    params.push(category_id);
+    rows = await db`
+      SELECT b.*, c.name_uz as category_name FROM books b
+      JOIN categories c ON b.category_id = c.id
+      WHERE b.category_id = ${category_id}
+      ORDER BY b.created_at DESC
+    `;
+  } else {
+    rows = await db`
+      SELECT b.*, c.name_uz as category_name FROM books b
+      JOIN categories c ON b.category_id = c.id
+      ORDER BY b.created_at DESC
+    `;
   }
-  const rows = db.prepare(sql).all(...params);
   return NextResponse.json(rows);
 }

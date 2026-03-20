@@ -12,10 +12,10 @@ export async function GET(req, { params }) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = params;
-  const row = db.prepare(`
+  const rows = await db`
     SELECT b.*, c.name_uz as category_name FROM books b
-    JOIN categories c ON b.category_id = c.id WHERE b.id = ?
-  `).get(id);
-  if (!row) return NextResponse.json({ error: 'Book not found' }, { status: 404 });
-  return NextResponse.json(row);
+    JOIN categories c ON b.category_id = c.id WHERE b.id = ${id}
+  `;
+  if (!rows || rows.length === 0) return NextResponse.json({ error: 'Book not found' }, { status: 404 });
+  return NextResponse.json(rows[0]);
 }

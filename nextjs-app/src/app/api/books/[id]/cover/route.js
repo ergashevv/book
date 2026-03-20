@@ -12,11 +12,12 @@ export async function GET(req, { params }) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = params;
-  const row = db.prepare('SELECT cover_url FROM books WHERE id = ?').get(id);
-  if (!row || !row.cover_url) return new NextResponse(null, { status: 404 });
+  const rows = await db`SELECT cover_url FROM books WHERE id = ${id}`;
+  if (!rows || rows.length === 0 || !rows[0].cover_url) return new NextResponse(null, { status: 404 });
+  const row = rows[0];
   
   const url = row.cover_url.trim();
-  if (url.startsWith('http://') || url.startsWith('https://')) {
+  if (url.startsWith('http')) {
     return NextResponse.redirect(url, 302);
   }
 
@@ -25,7 +26,6 @@ export async function GET(req, { params }) {
 
   const ext = path.extname(url).toLowerCase();
   const contentType = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp' }[ext] || 'image/jpeg';
-  
   const fileBuffer = fs.readFileSync(fullPath);
   return new NextResponse(fileBuffer, {
     headers: {

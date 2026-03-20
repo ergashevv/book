@@ -12,14 +12,14 @@ export async function GET(req) {
   const user = authMiddleware(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const rows = db.prepare(`
+  const rows = await db`
     SELECT r.book_id, r.page_number, r.updated_at, b.title, b.author, b.page_count, b.cover_url, c.name_uz as category_name
     FROM reading_progress r
     JOIN books b ON b.id = r.book_id
     JOIN categories c ON c.id = b.category_id
-    WHERE r.user_id = ? AND r.page_number > 0
+    WHERE r.user_id = ${user.id} AND r.page_number > 0
     ORDER BY r.updated_at DESC
     LIMIT 10
-  `).all(user.id);
+  `;
   return NextResponse.json(rows);
 }

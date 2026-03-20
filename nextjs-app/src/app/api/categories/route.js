@@ -4,17 +4,14 @@ import { validateTelegramWebAppData } from '@/lib/auth';
 
 function authMiddleware(req) {
   const initData = req.headers.get('x-telegram-init-data') || '';
-  const user = validateTelegramWebAppData(initData);
-  if (!user) {
-    return null;
-  }
-  return user;
+  return validateTelegramWebAppData(initData);
 }
 
 export async function GET(req) {
   const user = authMiddleware(req);
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const rows = db.prepare('SELECT * FROM categories ORDER BY name_uz').all();
+  // postgres library returns a result array
+  const rows = await db`SELECT * FROM categories ORDER BY name_uz`;
   return NextResponse.json(rows);
 }
