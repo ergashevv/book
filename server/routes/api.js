@@ -4,6 +4,7 @@ import fs from 'fs';
 import db from '../db.js';
 import { validateTelegramWebAppData } from '../auth.js';
 import { fileRoot } from '../paths.js';
+import { translate } from 'google-translate-api-x';
 
 const router = Router();
 
@@ -107,6 +108,27 @@ router.get('/me/continue-reading', authMiddleware, (req, res) => {
     LIMIT 10
   `).all(userId);
   res.json(rows);
+});
+
+// Translation: PDF sahifasini yoki tanlangan matnni tarjima qilish (uz, ru, en)
+router.post('/translate', authMiddleware, async (req, res) => {
+  const { text, target_lang, source_lang } = req.body || {};
+  if (!text || !target_lang) {
+    return res.status(400).json({ error: 'Text and target_lang required' });
+  }
+
+  try {
+    // google-translate-api-x free rejimda ishlaydi (API key shart emas kichik hajmda)
+    const result = await translate(text, {
+      to: target_lang,
+      from: source_lang || 'auto',
+      forceBatch: false
+    });
+    res.json({ translated: result.text, from: result.from.language.iso });
+  } catch (error) {
+    console.error('Translation error:', error.message);
+    res.status(500).json({ error: 'Translation failed', message: error.message });
+  }
 });
 
 export default router;

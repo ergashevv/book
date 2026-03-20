@@ -45,6 +45,7 @@ export default function Reader({ initData }) {
   });
   const [fitWidth, setFitWidth] = useState(false);
   const canvasRef = useRef(null);
+  const textLayerRef = useRef(null);
   const containerRef = useRef(null);
   const [uiVisible, setUiVisible] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -57,9 +58,34 @@ export default function Reader({ initData }) {
   const translateCache = useRef(new Map());
   const touchStartX = useRef(0);
   const didSwipe = useRef(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchIndex, setSearchIndex] = useState(-1);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   const [fitPage, setFitPage] = useState(() => typeof localStorage !== 'undefined' ? localStorage.getItem('readerFitPage') === 'true' : false);
   const scale = fitWidth ? null : fitPage ? null : ZOOM_LEVELS[zoomIndex];
+
+  // Toggle Fullscreen
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+      });
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, []);
 
   // Auto-hide UI after 3s inactivity
   const hideTimerRef = useRef(null);
@@ -68,6 +94,7 @@ export default function Reader({ initData }) {
     if (!uiVisible) return;
     hideTimerRef.current = setTimeout(() => setUiVisible(false), UI_AUTO_HIDE_MS);
   }, [uiVisible]);
+
   useEffect(() => {
     if (!uiVisible) return;
     resetHideTimer();
@@ -165,7 +192,26 @@ export default function Reader({ initData }) {
       canvas.height = viewport.height;
       canvas.style.width = viewport.width / dpr + 'px';
       canvas.style.height = viewport.height / dpr + 'px';
+
+      // Clear previous text layer
+      if (textLayerRef.current) {
+        textLayerRef.current.innerHTML = '';
+        textLayerRef.current.style.width = canvas.style.width;
+        textLayerRef.current.style.height = canvas.style.height;
+      }
+
       await page.render({ canvasContext: ctx, viewport }).promise;
+
+      // Render Text Layer for selection
+      if (textLayerRef.current) {
+        const textContent = await page.getTextContent();
+        pdfjsLib.renderTextLayer({
+          textContent,
+          container: textLayerRef.current,
+          viewport: page.getViewport({ scale: scaleLogical }),
+          enhanceTextSelection: true,
+        });
+      }
     },
     [pdfDoc, scale, fitWidth, fitPage]
   );
@@ -224,8 +270,8 @@ export default function Reader({ initData }) {
       setMenuOpen(false);
       return;
     }
-    if (x < w * 0.2) goPrev();
-    else if (x > w * 0.8) goNext();
+    if (x < w * 0.25) goPrev();
+    else if (x > w * 0.75) goNext();
     else {
       setUiVisible(false);
       setMenuOpen(false);
@@ -345,54 +391,74 @@ export default function Reader({ initData }) {
   }
 
   return (
-    <div className={`reader-wrap ${!uiVisible ? 'reader-ui-hidden' : ''}`} data-theme={theme}>
-      {uiVisible && (
-        <header className="reader-toolbar reader-toolbar--top" onClick={(e) => e.stopPropagation()}>
-          <Link to="/books" className="reader-toolbar__exit">
-            <IconArrowLeft style={{ width: 20, height: 20 }} />
+    <div className={`reader-wrap ${!uiVisible ? 'reader-ui-hidden' : ''}`} data-theme={theme} onMouseMove={uiVisible ? resetHideTimer : undefined}>
+      <header className="reader-toolbar reader-toolbar--top">
+        <div className="reader-toolbar__left">
+          <Link to="/books" className="reader-toolbar__exit" onClick={(e) => isFullscreen && toggleFullscreen()}>
+            <IconArrowLeft style={{ width: 24, height: 24 }} />
             <span className="reader-toolbar__exit-label">{t('reader.exit')}</span>
           </Link>
+        </div>
+        <div className="reader-toolbar__center">
           <h1 className="reader-toolbar__title" title={book?.title}>
-            {book?.title ? (book.title.length > 22 ? book.title.slice(0, 22) + '…' : book.title) : t('reader.pageTitle')}
+            {book?.title}
           </h1>
-          <span className="reader-progress reader-progress--center" title={t('reader.progressHint')}>
-            <span className="reader-progress__pct">{Math.round(progressPct)}%</span>
-            <span className="reader-progress__sep"> · </span>
-            {currentPage}<span className="reader-progress__sep">/</span>{totalPages}
-            {minsLeft > 0 && (
-              <>
-                <span className="reader-progress__sep"> · </span>
-                <span className="reader-progress__time">{minsLeft} {t('reader.minLeft')}</span>
-              </>
+        </div>
+        <div className="reader-toolbar__right">
+          <button
+            type="button"
+            className="reader-toolbar__btn-icon"
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+            title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+          >
+            {isFullscreen ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 22, height: 22 }}>
+                <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 22, height: 22 }}>
+                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+              </svg>
             )}
-          </span>
-          <div className="reader-toolbar__right">
+          </button>
+          <button
+            type="button"
+            className="reader-toolbar__btn-icon"
+            onClick={() => { setShowTranslate(true); setMenuOpen(false); }}
+            aria-label={t('reader.translate')}
+          >
+            <span className="reader-toolbar__translate-icon">Aa</span>
+          </button>
+          <button
+            type="button"
+            className="reader-toolbar__btn-icon"
+            onClick={() => { setShowSearch(true); setMenuOpen(false); }}
+            aria-label="Search"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 22, height: 22 }}>
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </button>
+          <div className="reader-toolbar__menu">
             <button
               type="button"
-              className="reader-toolbar__menu-btn"
-              onClick={() => { setShowTranslate(true); setMenuOpen(false); }}
-              aria-label={t('reader.translate')}
+              className="reader-toolbar__btn-icon"
+              onClick={(e) => { e.stopPropagation(); setMenuOpen((o) => !o); }}
+              aria-label={t('reader.menuAria')}
             >
-              <span className="reader-toolbar__translate-icon">Aa</span>
+              <IconMoreVertical style={{ width: 24, height: 24 }} />
             </button>
-            <div className="reader-toolbar__menu">
-              <button
-                type="button"
-                className="reader-toolbar__menu-btn"
-                onClick={() => setMenuOpen((o) => !o)}
-                aria-label={t('reader.menuAria')}
-              >
-                <IconMoreVertical style={{ width: 22, height: 22 }} />
-              </button>
-              {menuOpen && (
-                <div className="reader-menu-dropdown">
+            {menuOpen && (
+              <div className="reader-menu-dropdown animate-scale-in" onClick={(e) => e.stopPropagation()}>
+                <div className="reader-menu-section">
+                  <span className="reader-menu-label">Display Settings</span>
                   <div className="reader-menu-row reader-menu-row--zoom">
                     <button
                       type="button"
                       className="reader-menu-btn-icon"
                       onClick={() => { setFitWidth(false); setFitPage(false); setZoomIndex((i) => Math.max(0, i - 1)); }}
                       disabled={zoomIndex <= 0 && !fitWidth && !fitPage}
-                      aria-label={t('reader.zoomOut')}
                     >
                       <IconZoomOut style={{ width: 18, height: 18 }} />
                     </button>
@@ -404,12 +470,11 @@ export default function Reader({ initData }) {
                       className="reader-menu-btn-icon"
                       onClick={() => { setFitWidth(false); setFitPage(false); setZoomIndex((i) => Math.min(ZOOM_LEVELS.length - 1, i + 1)); }}
                       disabled={zoomIndex >= ZOOM_LEVELS.length - 1}
-                      aria-label={t('reader.zoomIn')}
                     >
                       <IconZoomIn style={{ width: 18, height: 18 }} />
                     </button>
                   </div>
-                  <div className="reader-menu-row reader-menu-fit-options">
+                  <div className="reader-menu-fit-options">
                     <button
                       type="button"
                       className={`reader-menu-theme ${fitWidth ? 'reader-menu-theme--active' : ''}`}
@@ -425,34 +490,29 @@ export default function Reader({ initData }) {
                       {t('reader.fitPage')}
                     </button>
                   </div>
-                  <div className="reader-menu-row reader-menu-themes">
+                </div>
+                <div className="reader-menu-section">
+                  <span className="reader-menu-label">Appearance</span>
+                  <div className="reader-menu-themes">
                     {THEMES.map((th) => (
                       <button
                         key={th.id}
                         type="button"
-                        className={theme === th.id ? 'reader-menu-theme reader-menu-theme--active' : 'reader-menu-theme'}
-                        onClick={() => {
-                          setTheme(th.id);
-                          setMenuOpen(false);
-                        }}
+                        className={`reader-menu-theme-chip ${theme === th.id ? 'reader-menu-theme-chip--active' : ''} reader-menu-theme-chip--${th.id}`}
+                        onClick={() => { setTheme(th.id); setMenuOpen(false); }}
+                        title={t(th.labelKey)}
                       >
-                        {t(th.labelKey)}
+                        <div className="reader-theme-circle" />
+                        <span>{t(th.labelKey)}</span>
                       </button>
                     ))}
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
-        </header>
-      )}
-
-      {pdfLoading && !pdfDoc && (
-        <div className="reader-loading reader-loading--overlay">
-          <Spinner size="lg" />
-          <p className="reader-loading__text">{t('reader.bookLoading')}</p>
         </div>
-      )}
+      </header>
 
       <div
         className="reader-pages"
@@ -460,73 +520,84 @@ export default function Reader({ initData }) {
         onClick={handleTap}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        onMouseMove={uiVisible ? resetHideTimer : undefined}
-        onTouchMove={uiVisible ? resetHideTimer : undefined}
-        role="button"
-        tabIndex={0}
         onKeyDown={(e) => {
           if (e.key === 'ArrowLeft') goPrev();
           if (e.key === 'ArrowRight') goNext();
           if (uiVisible) resetHideTimer();
         }}
-        aria-label={t('reader.pageAria')}
+        tabIndex={0}
       >
-        <div className="reader-page">
-          <canvas ref={canvasRef} />
+        <div className="reader-page-container">
+          {pdfLoading && !pdfDoc && (
+            <div className="reader-loading-overlay animate-fade-in">
+              <Spinner size="lg" />
+              <p>{t('reader.bookLoading')}</p>
+            </div>
+          )}
+          <div className="reader-page">
+            <canvas ref={canvasRef} />
+            <div ref={textLayerRef} className="textLayer" />
+          </div>
         </div>
       </div>
 
-      {uiVisible && (
-        <nav className="reader-nav reader-nav--kindle" onClick={(e) => e.stopPropagation()}>
-          <button
-            type="button"
-            className="reader-nav__btn reader-nav__btn--prev"
-            onClick={goPrev}
-            disabled={currentPage <= 1}
-          >
-            <IconChevronLeft style={{ width: 22, height: 22 }} />
-            <span className="reader-nav__label">{t('reader.prevPage')}</span>
-          </button>
-          <div className="reader-nav__center">
-            <form className="reader-nav__page-jump" onSubmit={handlePageInputSubmit}>
-              <input
-                type="number"
-                min={1}
-                max={totalPages || 1}
-                value={pageInput}
-                onChange={(e) => setPageInput(e.target.value)}
-                onBlur={() => goToPage(pageInput)}
-                className="reader-nav__page-input"
-                aria-label={t('reader.pageNumber')}
-              />
-            </form>
-            <span className="reader-nav__of">{currentPage} / {totalPages}</span>
-            {minsLeft > 0 && (
-              <span className="reader-nav__time-left">{minsLeft} {t('reader.minLeft')}</span>
-            )}
-            <div className="reader-progress-bar reader-progress-bar--bottom">
-              <div className="reader-progress-fill" style={{ width: `${progressPct}%` }} />
+      <nav className="reader-nav reader-nav--floating">
+        <div className="reader-nav__content" onClick={(e) => e.stopPropagation()}>
+          <div className="reader-nav__top">
+            <button
+              type="button"
+              className="reader-nav__arrow"
+              onClick={goPrev}
+              disabled={currentPage <= 1}
+              aria-label={t('reader.prevPage')}
+            >
+              <IconChevronLeft style={{ width: 28, height: 28 }} />
+            </button>
+            <div className="reader-nav__progress-text">
+              <span className="reader-nav__page-current">{currentPage}</span>
+              <span className="reader-nav__page-divider">/</span>
+              <span className="reader-nav__page-total">{totalPages}</span>
             </div>
+            <button
+              type="button"
+              className="reader-nav__arrow"
+              onClick={goNext}
+              disabled={currentPage >= totalPages}
+              aria-label={t('reader.nextPage')}
+            >
+              <IconChevronRight style={{ width: 28, height: 28 }} />
+            </button>
           </div>
-          <button
-            type="button"
-            className="reader-nav__btn reader-nav__btn--next"
-            onClick={goNext}
-            disabled={currentPage >= totalPages}
-          >
-            <span className="reader-nav__label">{t('reader.nextPage')}</span>
-            <IconChevronRight style={{ width: 22, height: 22 }} />
-          </button>
-        </nav>
-      )}
+          <div className="reader-nav__slider-container">
+            <input
+              type="range"
+              min="1"
+              max={totalPages || 1}
+              value={currentPage}
+              onChange={(e) => goToPage(e.target.value)}
+              className="reader-nav__slider"
+              aria-label="Seek page"
+            />
+          </div>
+          <div className="reader-nav__footer">
+            <span className="reader-nav__info">
+              {Math.round(progressPct)}% {t('home.read')}
+              {minsLeft > 0 && <span className="reader-nav__info-sep"> · </span>}
+              {minsLeft > 0 && `${minsLeft} ${t('reader.minLeft')}`}
+            </span>
+          </div>
+        </div>
+      </nav>
 
       {showTranslate && (
-        <div className="reader-translate-overlay" onClick={() => setShowTranslate(false)} role="button" tabIndex={0} aria-label={t('common.close')}>
-          <div className="reader-translate-panel" onClick={(e) => e.stopPropagation()}>
+        <div className="reader-translate-overlay" onClick={() => setShowTranslate(false)}>
+          <div className="reader-translate-panel animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
             <div className="reader-translate-header">
               <h3>{t('reader.translate')}</h3>
-              <button type="button" className="btn btn-secondary" style={{ padding: '8px 16px', minHeight: 36 }} onClick={() => setShowTranslate(false)}>
-                {t('common.close')}
+              <button type="button" className="reader-translate-close" onClick={() => setShowTranslate(false)}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 24, height: 24 }}>
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
             <div className="reader-translate-modes">
@@ -545,33 +616,101 @@ export default function Reader({ initData }) {
                 {t('reader.translateCustom')}
               </button>
             </div>
-            {translateMode === 'custom' && (
+            {translateMode === 'custom' ? (
               <div className="reader-translate-custom">
                 <textarea
                   className="reader-translate-textarea"
                   placeholder={t('reader.translatePlaceholder')}
                   value={customText}
                   onChange={(e) => setCustomText(e.target.value)}
-                  rows={3}
                 />
-                <button type="button" className="btn" style={{ marginTop: 8 }} onClick={() => runTranslate(customText)} disabled={!customText.trim() || translateLoading}>
-                  {translateLoading ? t('common.loading') : t('reader.translate')}
+                <button
+                  type="button"
+                  className="btn btn--block"
+                  style={{ marginTop: 12 }}
+                  onClick={() => runTranslate(customText)}
+                  disabled={!customText.trim() || translateLoading}
+                >
+                  {translateLoading ? <Spinner size="sm" /> : t('reader.translate')}
                 </button>
               </div>
-            )}
-            {(translateLoading && translateMode === 'page') && (
-              <div className="reader-translate-loading"><Spinner size="lg" /> <span>{t('common.loading')}</span></div>
+            ) : (
+              translateLoading && <div className="reader-translate-loading"><Spinner size="lg" /></div>
             )}
             {translateError && <p className="reader-translate-error">{translateError}</p>}
             {translated && (
-              <div className="reader-translate-result">
-                <p className="reader-translate-label">{t('reader.translated')}</p>
+              <div className="reader-translate-result animate-fade-in">
                 <div className="reader-translate-output">{translated}</div>
-                <button type="button" className="btn btn-secondary" style={{ marginTop: 8 }} onClick={handleCopyTranslation}>
+                <button type="button" className="btn btn-secondary btn--block" style={{ marginTop: 16 }} onClick={handleCopyTranslation}>
                   {t('reader.copy')}
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {showSearch && (
+        <div className="reader-translate-overlay" onClick={() => setShowSearch(false)}>
+          <div className="reader-translate-panel animate-fade-in-up" onClick={(e) => e.stopPropagation()}>
+            <div className="reader-translate-header">
+              <h3>{t('books.search')}</h3>
+              <button type="button" className="reader-translate-close" onClick={() => setShowSearch(false)}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 24, height: 24 }}>
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <form className="books-search-wrap" style={{ marginTop: 12 }} onSubmit={(e) => {
+              e.preventDefault();
+              if (!searchQuery.trim()) return;
+              setSearchLoading(true);
+              setSearchResults([]);
+              const results = [];
+              const searchPages = async () => {
+                for (let i = 1; i <= totalPages; i++) {
+                  const p = await pdfDoc.getPage(i);
+                  const content = await p.getTextContent();
+                  const text = content.items.map(item => item.str).join(' ');
+                  if (text.toLowerCase().includes(searchQuery.toLowerCase())) {
+                    results.push({ page: i, text: text.trim().slice(0, 100) + '...' });
+                  }
+                }
+                setSearchResults(results);
+                setSearchLoading(false);
+              };
+              searchPages();
+            }}>
+              <input
+                className="books-search-input"
+                autoFocus
+                placeholder={t('books.searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button type="submit" className="btn btn-sm" disabled={searchLoading}>
+                {searchLoading ? <Spinner size="sm" /> : t('books.search')}
+              </button>
+            </form>
+            <div className="reader-search-results" style={{ maxHeight: '300px', overflowY: 'auto', marginTop: 16 }}>
+              {searchResults.map((res, i) => (
+                <div
+                  key={i}
+                  className="reader-search-item"
+                  style={{ padding: '12px', borderBottom: '1px solid var(--border)', cursor: 'pointer' }}
+                  onClick={() => {
+                    setCurrentPage(res.page);
+                    setShowSearch(false);
+                  }}
+                >
+                  <div style={{ fontWeight: 'bold' }}>{t('reader.pageNumber')} {res.page}</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginTop: 4 }}>{res.text}</div>
+                </div>
+              ))}
+              {!searchLoading && searchQuery && searchResults.length === 0 && (
+                <p style={{ textAlign: 'center', padding: '20px', color: 'var(--muted)' }}>{t('books.noResults')}</p>
+              )}
+            </div>
           </div>
         </div>
       )}

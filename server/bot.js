@@ -8,7 +8,8 @@ const webhookUrl = (
   (process.env.RENDER_EXTERNAL_URL && process.env.RENDER_EXTERNAL_URL.startsWith('http') ? process.env.RENDER_EXTERNAL_URL : '') ||
   (process.env.WEBAPP_URL && process.env.WEBAPP_URL.startsWith('https') ? process.env.WEBAPP_URL : '')
 ).trim().replace(/\/$/, '');
-const useWebhook = !!webhookUrl && !webhookUrl.includes('localhost');
+const isProd = process.env.NODE_ENV === 'production';
+const useWebhook = isProd && !!webhookUrl && !webhookUrl.includes('localhost');
 
 let bot = null;
 let botWebhookHandler = (req, res) => res.status(501).send('Bot not configured');
