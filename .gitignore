@@ -1,39 +1,46 @@
-# Dependencies
-node_modules/
-webapp/node_modules/
-admin/node_modules/
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Env (parollar, tokenlar)
-.env
-.env.local
-.env.*.local
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
-# Build
-dist/
-webapp/dist/
-admin/dist/
+# testing
+/coverage
 
-# Ma'lumotlar va yuklangan fayllar
-data/
-uploads/
+# next.js
+/.next/
+/out/
 
-# Katta PDF (loyiha ildizida test uchun)
-*.pdf
+# production
+/build
 
-# Loglar
-*.log
-npm-debug.log*
-
-# OS
+# misc
 .DS_Store
-Thumbs.db
+*.pem
 
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
-# Test / coverage
-coverage/
-.nyc_output/
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# local storage
+/data/
+/uploads/
+
